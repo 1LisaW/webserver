@@ -9,6 +9,8 @@
 # include <netdb.h>
 #include <sys/poll.h>
 
+# include "HTTPRequest.hpp"
+
 #define BACKLOG 10     // how many pending connections queue will hold
 
 struct Config
