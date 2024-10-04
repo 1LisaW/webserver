@@ -69,16 +69,23 @@ void	WebServer::_accept()
 void	WebServer::_handle()
 {
 std::cout << _buffer << std::endl;
-std::cout << "HTTPREQUEST" << std::endl;
-HTTPRequest request(_buffer);
+// std::cout << "HTTPREQUEST" << std::endl;
+// HTTPRequest request(_buffer);
+curr_request = new HTTPRequest(_buffer);
 }
 
 void	WebServer::_respond()
 {
 	// std::string serv_msg = "Hello from serv\n";
 	// write(new_socket_fd, serv_msg.c_str(), serv_msg.length());
-	char arr[200]="HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length: 16\n\n<h1>testing</h1>";
+	// char arr[200]="HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length: 16\n\n<h1>testing</h1>";
 	// int send_res=
-	send(new_socket_fd,arr,sizeof(arr),0);
+	HTTPResponse response(*curr_request);
+	// std::cout << "---- RESPONSE: " << curr_request->get_path() << std::endl;
+	// std::cout << response.response << std::endl;
+	// std::cout << "RESPONSE ENDS HERE ----- " << std::endl;
+	delete curr_request;
+	// send(new_socket_fd,arr,sizeof(arr),0);
+	send(new_socket_fd,response.response.c_str(), response.response.size(),0);
 	close(new_socket_fd);
 }

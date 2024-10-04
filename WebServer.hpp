@@ -10,6 +10,7 @@
 #include <sys/poll.h>
 
 # include "HTTPRequest.hpp"
+# include "HTTPResponse.hpp"
 
 #define BACKLOG 10     // how many pending connections queue will hold
 
@@ -33,6 +34,7 @@ private:
 	void	_accept();
 	void	_handle();
 	void	_respond();
+	HTTPRequest *curr_request;
 public:
 	WebServer(int argc, char* argv[]);
 	~WebServer();
