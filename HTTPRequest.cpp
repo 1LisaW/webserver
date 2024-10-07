@@ -1,5 +1,6 @@
 #include "HTTPRequest.hpp"
 
+
 HTTPRequest::HTTPRequest(char const *buffer)
 {
     status_code = uninitialized;

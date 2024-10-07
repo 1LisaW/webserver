@@ -14,6 +14,13 @@
 
 #define BACKLOG 10     // how many pending connections queue will hold
 
+struct locationStr {
+	bool	exactMatch;
+    std::vector<std::string> uri;
+    std::string root;
+    std::vector<std::string> allowedMethods;
+} ;
+
 struct Config
 {
 	const char* node; // e.g. "www.example.com" or IP
@@ -35,6 +42,7 @@ private:
 	void	_handle();
 	void	_respond();
 	HTTPRequest *curr_request;
+	std::vector<locationStr> _locations;
 public:
 	WebServer(int argc, char* argv[]);
 	~WebServer();

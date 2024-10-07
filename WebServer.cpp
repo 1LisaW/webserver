@@ -49,6 +49,25 @@ bool WebServer::_parse_config(int argc, char* argv[], struct Config &config)
 		return(false);
 	}
 	// TODO:: Read from file
+
+	//Mock for locations
+	locationStr firstLocation;
+	firstLocation.uri.push_back("/");
+	firstLocation.exactMatch = false;
+	firstLocation.allowedMethods.push_back("GET");
+	firstLocation.root = "/www";
+	this->_locations.push_back(firstLocation);
+	locationStr secondLocation;
+	secondLocation.uri.push_back("/cgi-bin");
+	secondLocation.uri.push_back("/");
+	secondLocation.exactMatch = false;
+	secondLocation.allowedMethods.push_back("POST");
+	secondLocation.allowedMethods.push_back("DELETE");
+	secondLocation.root = "/cgi-bin";
+	this->_locations.push_back(secondLocation);
+
+
+
 	close(conf_fd);
 	config.node = "localhost";
 	config.service = "3000";
