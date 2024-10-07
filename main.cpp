@@ -37,7 +37,16 @@
 #include "WebServer.hpp"
 int	main(int argc, char *argv[])
 {
-	WebServer webserv(argc, argv);
+  (void) argc;
+  (void) argv;
+  // std::cout << "Extention is :" << get_uri_extention("") << "|" << std::endl;
+  std::cout << "Extention is :" << get_uri_extention("/") << "|" << std::endl;
+  std::cout << "Extention is :" << get_uri_extention("/home") << "|" << std::endl;
+  std::cout << "Extention is :" << get_uri_extention("/home/index") << "|" << std::endl;
+  std::cout << "Extention is :" << get_uri_extention("/home/index.php") << "|" << std::endl;
+
+
+	// WebServer webserv(argc, argv);
 	return (0);
 }
 
