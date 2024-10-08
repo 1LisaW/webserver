@@ -9,6 +9,7 @@
 # include <netdb.h>
 #include <sys/poll.h>
 
+# include "Dictionary.hpp"
 # include "HTTPRequest.hpp"
 # include "HTTPResponse.hpp"
 
@@ -43,11 +44,14 @@ private:
 	void	_respond();
 	HTTPRequest *curr_request;
 	std::vector<locationStr> _locations;
+	locationStr *getLocation(std::string path);
 public:
 	WebServer(int argc, char* argv[]);
 	~WebServer();
 	void launch();
+	static std::map<std::string, std::string> dictionaryContentTypes;
+	static Dictionary dictionary;
 };
 
-
+// std::map<std::string, std::string> WebServer::dictionaryContentTypes = setDictionaryContentTypes();
 #endif

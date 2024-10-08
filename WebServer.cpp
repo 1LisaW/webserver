@@ -90,7 +90,7 @@ void	WebServer::_handle()
 std::cout << _buffer << std::endl;
 // std::cout << "HTTPREQUEST" << std::endl;
 // HTTPRequest request(_buffer);
-curr_request = new HTTPRequest(_buffer);
+curr_request = new HTTPRequest(_buffer, WebServer::dictionary);
 }
 
 void	WebServer::_respond()
@@ -108,3 +108,18 @@ void	WebServer::_respond()
 	send(new_socket_fd,response.response.c_str(), response.response.size(),0);
 	close(new_socket_fd);
 }
+
+locationStr *WebServer::getLocation(std::string pathWithIndex)
+{
+
+	locationStr *location = NULL;
+	std::vector<locationStr>::iterator iter;
+	int	deepLevelPath = 1000;
+	iter = _locations.begin();
+	while (iter != _locations.end())
+	{
+		iter++;
+	}
+}
+
+Dictionary WebServer::dictionary = Dictionary();

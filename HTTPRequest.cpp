@@ -1,7 +1,7 @@
 #include "HTTPRequest.hpp"
 
 
-HTTPRequest::HTTPRequest(char const *buffer)
+HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
 {
     status_code = uninitialized;
     // 1. Parse first string from request
@@ -16,7 +16,7 @@ HTTPRequest::HTTPRequest(char const *buffer)
     this->method.append(buff.substr(0, buff.find_first_of(' ')));
     buff.erase(0, this->method.length());
     buff.erase(0, buff.find_first_not_of(" "));
-    if (HTTPRequest::METHODS.find(method) == HTTPRequest::METHODS.end())
+    if (dictionary.isMethodInDictionary(method))
     {
         this->status_code = bad_request;
         std::cout << "NOT FOUND! " << std::endl;
@@ -97,5 +97,5 @@ std::string HTTPRequest::get_protocol_v()
 {
     return (protocol_v);
 };
-const std::string methods[] = {"GET","POST","DELETE"};
-const std::set<std::string> HTTPRequest::METHODS(methods, methods + sizeof(methods)/sizeof(methods[0]));
+// const std::string methods[] = {"GET","POST","DELETE"};
+// const std::set<std::string> HTTPRequest::METHODS(methods, methods + sizeof(methods)/sizeof(methods[0]));

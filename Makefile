@@ -1,7 +1,9 @@
 NAME = webserver
+OBJDIR = objs
 CFLAGS = -Wall -Wextra -Werror
 RM = rm -rf
-FILES	=	main WebServer HTTPRequest HTTPResponse
+FILES	=	main WebServer HTTPRequest HTTPResponse \
+			Dictionary
 SRC		= $(addsuffix .cpp, $(FILES))
 OBJ		= $(addsuffix .o, $(FILES))
 
@@ -11,6 +13,7 @@ OBJ		= $(addsuffix .o, $(FILES))
 all :	$(NAME)
 
 $(NAME): $(OBJ)
+	@mkdir -p $(OBJDIR)
 	c++ -o $(NAME) $(OBJ)
 
 $(OBJ) : $(SRC)
