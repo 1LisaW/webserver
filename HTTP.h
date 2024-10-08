@@ -201,12 +201,6 @@ inline std::string getFilePath(std::string path, std::string index)
 // std::pair<std::string, std::string> httpCT = {"http", "text/html"};
 // contentTypesMap.insert(contentTypesMap.begin(), std::make_pair("http", "text/html"));
 
-inline std::string getContentType(std::string type)
-{
-	(void) type;
-	std::map<std::string, std::string> contentTypesMap;
-	contentTypesMap["http"] = "text/html";
-	return (type);
-}
+
 
 #endif

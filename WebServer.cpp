@@ -109,15 +109,28 @@ void	WebServer::_respond()
 	close(new_socket_fd);
 }
 
-locationStr *WebServer::getLocation(std::string pathWithIndex)
+locationStr *WebServer::getLocation(std::string path)
 {
-
 	locationStr *location = NULL;
+
+	std::vector<std::string> pathVector;
+	std::string pathString = path;
+	while (pathString.size())
+    {
+		pathVector.push_back(pathString);
+		pathString.erase(pathString.find_last_of('/'));
+	}
+	std::string rootPath = path.substr(0, path.find_first_of("/"));
+	if (rootPath.size())
+		pathVector.push_back(rootPath);
+
 	std::vector<locationStr>::iterator iter;
 	int	deepLevelPath = 1000;
 	iter = _locations.begin();
 	while (iter != _locations.end())
 	{
+		if (iter->exactMatch && iter->root.compare(path))
+			continue ;
 		iter++;
 	}
 }
