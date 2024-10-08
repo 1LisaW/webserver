@@ -28,6 +28,7 @@ HTTPResponse::HTTPResponse(HTTPRequest &request) : _request(request)
 			response_headers.append(_request.headers["Connection"]);
 			response_headers.append("\r\n");
 		}
+		// TODO : replace with one function from Dictionary
 		if (!_request.get_path().compare("/"))
 			response_headers.append("Content-Type: text/html\r\n");
 		else if (!_request.get_path().compare("/favicon.ico"))
@@ -36,6 +37,8 @@ HTTPResponse::HTTPResponse(HTTPRequest &request) : _request(request)
 			response_headers.append("Content-Type: text/css\r\n");
 		else
 			response_headers.append("Content-Type: text/html\r\n");
+
+		
 		_set_content();
 		response.append(status_line);
 		response.append(response_headers);
