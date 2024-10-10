@@ -1,4 +1,4 @@
-#include "WebServer.hpp"
+#include "includes/WebServer.hpp"
 
 WebServer::WebServer(int argc, char* argv[])
 {
@@ -111,7 +111,7 @@ void	WebServer::_respond()
 
 locationStr *WebServer::getLocation(std::string path)
 {
-	locationStr *location = NULL;
+	// locationStr *location = NULL;
 
 	std::vector<std::string> pathVector;
 	std::string pathString = path;
@@ -125,7 +125,7 @@ locationStr *WebServer::getLocation(std::string path)
 		pathVector.push_back(rootPath);
 
 	std::vector<locationStr>::iterator iter;
-	int	deepLevelPath = 1000;
+	// int	deepLevelPath = 1000;
 	iter = _locations.begin();
 	while (iter != _locations.end())
 	{
@@ -133,6 +133,7 @@ locationStr *WebServer::getLocation(std::string path)
 			continue ;
 		iter++;
 	}
+	return (NULL);
 }
 
 Dictionary WebServer::dictionary = Dictionary();

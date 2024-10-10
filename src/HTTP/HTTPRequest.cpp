@@ -1,4 +1,4 @@
-#include "HTTPRequest.hpp"
+#include "includes/HTTPRequest.hpp"
 
 
 HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
@@ -16,7 +16,7 @@ HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
     this->method.append(buff.substr(0, buff.find_first_of(' ')));
     buff.erase(0, this->method.length());
     buff.erase(0, buff.find_first_not_of(" "));
-    if (dictionary.isMethodInDictionary(method))
+    if (!dictionary.isMethodInDictionary(method))
     {
         this->status_code = bad_request;
         std::cout << "NOT FOUND! " << std::endl;

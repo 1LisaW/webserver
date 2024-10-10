@@ -2,12 +2,8 @@
 # define HTTPREQUEST_H
 
 #include "HTTP.h"
-#include "Dictionary.hpp"
+#include "../../Configuration/includes/Dictionary.hpp"
 #include <vector>
-// struct ServerConfig
-// {
-// 	std::map<std::string, std::vector<std::string>> routs;
-// };
 
 
 class HTTPRequest
@@ -19,7 +15,8 @@ private:
     std::string method;
     std::string path;
     std::string protocol_v;
-	std::string	index;
+    struct LocationStr *location;
+    std::string pathToFile;
 
 public:
     std::map<std::string, std::string> headers;

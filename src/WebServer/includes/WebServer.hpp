@@ -9,9 +9,9 @@
 # include <netdb.h>
 #include <sys/poll.h>
 
-# include "Dictionary.hpp"
-# include "HTTPRequest.hpp"
-# include "HTTPResponse.hpp"
+# include "../../Configuration/includes/Dictionary.hpp"
+# include "../../HTTP/includes/HTTPRequest.hpp"
+# include "../../HTTP/includes/HTTPResponse.hpp"
 
 #define BACKLOG 10     // how many pending connections queue will hold
 

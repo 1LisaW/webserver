@@ -1,4 +1,4 @@
-#include "HTTPResponse.hpp"
+#include "includes/HTTPResponse.hpp"
 
 HTTPResponse::HTTPResponse(HTTPRequest &request) : _request(request)
 {
@@ -38,7 +38,7 @@ HTTPResponse::HTTPResponse(HTTPRequest &request) : _request(request)
 		else
 			response_headers.append("Content-Type: text/html\r\n");
 
-		
+
 		_set_content();
 		response.append(status_line);
 		response.append(response_headers);
