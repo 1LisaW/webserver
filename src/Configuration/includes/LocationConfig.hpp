@@ -41,7 +41,7 @@ class LocationConfig: public Attribute
 		~LocationConfig();
 		void	setUri(std::vector<std::string> vector);
 		void	fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary);
-
+		bool	isValid();
 };
 
 #endif

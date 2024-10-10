@@ -162,3 +162,10 @@ void LocationConfig::fillAttributes(std::vector<std::string> confLineVector, Dic
 	else if (!attributeName.compare("cgi_param"))
 		setCgiParams(confLineVector);
 }
+
+bool LocationConfig::isValid()
+{
+	if (!isCgi && (uri.empty() || root.empty()))
+		return (false);
+	return (true);
+}

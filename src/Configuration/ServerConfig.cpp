@@ -3,16 +3,28 @@
 // ServerConfig.
 ServerConfig::ServerConfig()
 {
-	listen = "";
-	serverName = "";
-	errorPages.clear();
-	clientMaxBodySize = 0;
-	index = "";
-	locations.clear();
+	resetToDefault();
+}
+
+ServerConfig & ServerConfig::operator=(const ServerConfig &rhs)
+{
+	(void) rhs;
+	this->resetToDefault();
+	return (*this);
 }
 
 ServerConfig::~ServerConfig()
 {
+}
+
+void ServerConfig::resetToDefault()
+{
+	this->listen.clear();
+	this->serverName.clear();
+	this->clientMaxBodySize = -1;
+	this->index.clear();
+	this->locations.clear();
+	this->errorPages.clear();
 }
 
 void ServerConfig::setListen(std::vector<std::string> vector)

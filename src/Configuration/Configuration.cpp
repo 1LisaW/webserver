@@ -64,8 +64,13 @@ void Configuration::parseConfig()
 				switch (dictionary.getConfigBlockLevel(blockInProgressStack.top()))
 				{
 				case 1:
-					// TODO:: add validation of location
-					server.locations.push_back(location);
+					if (location.isValid())
+						server.locations.push_back(location);
+					else
+					{
+						std::cout << "ERROR WITH VALIDATION OF LOCATION" << std::endl;
+						exit(1);
+					}
 					break;
 				case 0:
 					if (server.isValid())
@@ -101,7 +106,10 @@ void Configuration::parseConfig()
 			if (!isNotAttributeEnd)
 			{
 				int lastElemIdx = confLineVector.size() - 1;
-				confLineVector[lastElemIdx].erase(confLineVector[lastElemIdx].find_last_of(';'));
+				if (confLineVector[lastElemIdx].size() == 1)
+					confLineVector.pop_back();
+				else
+					confLineVector[lastElemIdx].erase(confLineVector[lastElemIdx].find_last_of(';'));
 				switch (dictionary.getConfigBlockLevel(blockInProgressStack.top()))
 				{
 				case 0:

@@ -12,6 +12,7 @@ private:
 	void	setServerName(std::vector<std::string> vector);
 	void	setClientMaxBodySize(std::vector<std::string> vector);
 	void	setIndex(std::vector<std::string> vector);
+	void	resetToDefault();
 
 public:
 	std::string listen;
@@ -21,6 +22,7 @@ public:
 	std::vector<LocationConfig> locations;
 
 	ServerConfig();
+	ServerConfig & operator=(const ServerConfig &rhs);
 	~ServerConfig();
 	void	fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary);
 	bool	isValid();

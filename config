@@ -25,7 +25,7 @@ server {
         index index.html;
         autoindex on;  # Turn on directory listing
         allow_methods GET;
-        error_page 404 /error_pages/subpage 404.html;
+        error_page 404 /error_pages 404.html;
 
     }
 

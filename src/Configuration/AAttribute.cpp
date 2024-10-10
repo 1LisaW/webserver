@@ -7,7 +7,7 @@ bool Attribute::isValidOneValue(std::vector<std::string> vector)
 {
 	if (vector.size() != 2)
 	{
-		std::cout << "Instruction \"" << vector[0] << "\" should have only one port value" << std::endl;
+		std::cout << "Instruction \"" << vector[0] << "\" must have only one value" << std::endl;
 		return (false);
 	}
 	return (true);
