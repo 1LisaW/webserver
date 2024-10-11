@@ -84,7 +84,10 @@ bool Dictionary::isMethodInDictionary(std::string method)
 
 std::string Dictionary::getContentTypeFromDictionary(std::string type)
 {
+	if (type.empty())
+		return (contentTypes["html"]);
 	if (contentTypes.find(type) == contentTypes.end())
-		return ("");
+		return ("application/octet-stream");
 	return (contentTypes[type]);
 }
+

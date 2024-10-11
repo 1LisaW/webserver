@@ -47,18 +47,21 @@ curr_request = new HTTPRequest(_buffer, dictionary);
 void	WebServer::_respond()
 {
 	std::string responseFile = getResponseFilePath(curr_request, serverConfig);
-	HTTPResponse response(*curr_request);
+	HTTPResponse response(*curr_request, responseFile);
 	delete curr_request;
+	std::cout << "RESPONSE DATA: " << response.response << std::endl;
 	send(new_socket_fd,response.response.c_str(), response.response.size(),0);
 	close(new_socket_fd);
 }
 
 std::string WebServer::getResponseErrorFilePath(LocationConfig *location, enum status_code_value statusCode)
 {
+	std::cout << "1 getResponseErrorFilePath " << std::endl;
+
 	if (!location)
 		return ("");
 	std::vector<std::string> errPathVector;
-	std::string errPagePath;
+	std::string errPagePath = ".";
 	switch (statusCode)
 	{
 	case forbidden:
@@ -90,6 +93,8 @@ std::string WebServer::getResponseErrorFilePath(LocationConfig *location, enum s
 std::string WebServer::getResponseFilePath(HTTPRequest *request, ServerConfig &serverConfig)
 {
 	std::string filePath;
+	std::cout << "1 getResponseFilePath " << std::endl;
+
 	std::string requestUri = request->get_path();
 	// get the location that matches uri of the request
 	LocationConfig *location = serverConfig.getLocation(requestUri);
@@ -101,26 +106,35 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request, ServerConfig &s
 	// get path of file
 	else
 	{
+		std::cout << "2 getResponseFilePath " << std::endl;
+
 		std::string restUriPath;
 		filePath.append(location->root);
-		restUriPath.append(requestUri.substr(filePath.size() - 1));
+		restUriPath.append(requestUri.substr(request->get_path().size() - 1));
 		filePath.append("/");
 		filePath.append(restUriPath);
+		std::cout << "4 getResponseFilePath " << std::endl;
 
 		std::string fileExtention = getUriExtention(filePath);
+		std::cout << "5 getResponseFilePath " << std::endl;
 		if (!fileExtention.size())
 		{
 			filePath.append("/");
 			filePath.append(location->index);
 		}
-		int fileFd = open(filePath.c_str(), O_RDONLY);
+		std::string relativePath = ".";
+		relativePath.append(filePath);
+		int fileFd = open(relativePath.c_str(), O_RDONLY);
 		if (fileFd < 0)
 		{
 			request->setStatusCode(not_found);
 		}
 		else
 			close(fileFd);
-		if (request->get_status_code() && request->get_status_code() != ok)
+					
+		if (!request->get_status_code() || request->get_status_code() == ok)
+			return (relativePath);
+		else
 		{
 			filePath.clear();
 			filePath.append(getResponseErrorFilePath(location, request->get_status_code()));

@@ -65,6 +65,17 @@ void LocationConfig::setUri(std::vector<std::string> vector)
 		std::cout << "Invalid location data" << std::endl;
 		return;
 	}
+	if (vector.size() != (idx + 2))
+	{
+		modifier.clear();
+		return;
+	}
+	if (modifier[0] != '~' && vector[idx][0] != '/')
+	{
+		uri.clear();
+		std::cout << "Invalid location uri data. URI should start with \"/\" simbol" << std::endl;
+		return ;
+	}
 	uri = vector[idx];
 }
 void LocationConfig::setRoot(std::vector<std::string> vector)
@@ -73,6 +84,13 @@ void LocationConfig::setRoot(std::vector<std::string> vector)
 	{
 		root.empty();
 		return;
+	}
+	size_t v1Size = vector[1].size();
+	if (vector[1][0] != '/' || (v1Size > 1 && vector[1][v1Size - 1] == '/'))
+	{
+		uri.clear();
+		std::cout << "Invalid location root data. Root should start with \"/\" simbol and must not have simbol \"/\"  at the end." << std::endl;
+		return ;
 	}
 	root = vector[1];
 	size_t rootSize = root.size();

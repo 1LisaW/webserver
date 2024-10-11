@@ -14,14 +14,14 @@ server {
 
     # Root location
     location / {
-        root /server/;
+        root /www;
         index index.html;
         autoindex off;  # Turn off directory listing
         allow_methods GET POST;  # Accepted HTTP methods
     }
 
     location /subpage {
-        root /server/subpage;
+        root /subpage;
         index index.html;
         autoindex on;  # Turn on directory listing
         allow_methods GET;

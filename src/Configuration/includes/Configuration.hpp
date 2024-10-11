@@ -16,9 +16,9 @@
 class Configuration
 {
 private:
-	Dictionary dictionary;
 	const char *configFile;
 public:
+	Dictionary dictionary;
 	int blockLayer;
 	int lineNb;
 	std::vector<ServerConfig> servers;

@@ -9,7 +9,6 @@
 class HTTPRequest
 {
 private:
-    Dictionary &dictionary;
     enum status_code_value status_code;
     std::string buff;
     std::string method;
@@ -19,6 +18,7 @@ private:
     std::string pathToFile;
 
 public:
+    Dictionary &dictionary;
     std::map<std::string, std::string> headers;
     HTTPRequest(char const * buffer, Dictionary &dict);
     ~HTTPRequest();
