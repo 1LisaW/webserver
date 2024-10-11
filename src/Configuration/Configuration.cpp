@@ -27,7 +27,7 @@ void Configuration::parseConfig()
 	std::vector<std::string> confLineVector;
 
 	ServerConfig server;
-	LocationConfig location(dictionary, server.errorPages);
+	LocationConfig location(dictionary, server.errorPages, server.clientMaxBodySize);
 
 	while (std::getline(nameFileOut, configLine))
 	{
@@ -96,7 +96,7 @@ void Configuration::parseConfig()
 				}
 				else if (blockLayer == 1)
 				{
-					location = LocationConfig(dictionary, server.errorPages);
+					location = LocationConfig(dictionary, server.errorPages, server.clientMaxBodySize);
 					location.setUri(confLineVector);
 				}
 				blockLayer++;

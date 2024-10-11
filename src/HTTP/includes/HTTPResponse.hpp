@@ -18,13 +18,11 @@ private:
 	std::string content;
 	void	_set_content();
 public:
-	HTTPResponse(HTTPRequest &request);
+	HTTPResponse(HTTPRequest &request, std::string filePath);
 	~HTTPResponse();
 	std::string response;
 	void	get();
+
 };
-
-
-
 
 #endif

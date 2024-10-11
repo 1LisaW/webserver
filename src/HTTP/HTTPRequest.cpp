@@ -83,6 +83,10 @@ enum status_code_value HTTPRequest::get_status_code(){
     return (status_code);
 };
 
+void HTTPRequest::setStatusCode(enum status_code_value code){
+    status_code = code;
+};
+
 std::string HTTPRequest::get_method()
 {
     return (method);
@@ -97,5 +101,3 @@ std::string HTTPRequest::get_protocol_v()
 {
     return (protocol_v);
 };
-// const std::string methods[] = {"GET","POST","DELETE"};
-// const std::set<std::string> HTTPRequest::METHODS(methods, methods + sizeof(methods)/sizeof(methods[0]));

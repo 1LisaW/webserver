@@ -10,25 +10,11 @@
 #include <sys/poll.h>
 
 # include "../../Configuration/includes/Dictionary.hpp"
+# include "../../Configuration/includes/ServerConfig.hpp"
 # include "../../HTTP/includes/HTTPRequest.hpp"
 # include "../../HTTP/includes/HTTPResponse.hpp"
 
 #define BACKLOG 10     // how many pending connections queue will hold
-
-struct locationStr {
-	bool	exactMatch;
-    std::vector<std::string> uri;
-    std::string root;
-    std::vector<std::string> allowedMethods;
-} ;
-
-struct Config
-{
-	const char* node; // e.g. "www.example.com" or IP
-	const char* service;  // e.g. "http" or port number
-	struct addrinfo hints;
-};
-
 
 class WebServer
 {
@@ -38,20 +24,20 @@ private:
 	struct pollfd fds[200];
 	char	_buffer[30000];
 	struct addrinfo *res;
-	bool	_parse_config(int argc, char* argv[], struct Config &config);
+
+	ServerConfig &serverConfig;
+	Dictionary &dictionary;
+	HTTPRequest *curr_request;
+
 	void	_accept();
 	void	_handle();
 	void	_respond();
-	HTTPRequest *curr_request;
-	std::vector<locationStr> _locations;
-	locationStr *getLocation(std::string path);
 public:
-	WebServer(int argc, char* argv[]);
+	WebServer(ServerConfig &ServerConfig, Dictionary &dictionary);
 	~WebServer();
 	void launch();
-	static std::map<std::string, std::string> dictionaryContentTypes;
-	static Dictionary dictionary;
+	std::string getResponseErrorFilePath(LocationConfig *location, enum status_code_value statusCode);
+	std::string getResponseFilePath(HTTPRequest *request, ServerConfig &ServerConfig);
 };
 
-// std::map<std::string, std::string> WebServer::dictionaryContentTypes = setDictionaryContentTypes();
 #endif

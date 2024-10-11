@@ -25,8 +25,6 @@ public:
 	Configuration(const char *path);
 	~Configuration();
 	void parseConfig();
-	void parseBlockLine();
-	void parseAttributeLine();
 	void printConfigurationData();
 };
 

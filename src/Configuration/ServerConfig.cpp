@@ -95,3 +95,43 @@ bool ServerConfig::isValid()
 	return (true);
 }
 
+LocationConfig *ServerConfig::getLocation(std::string path)
+{
+	std::string filePath = path;
+	std::vector<std::string> pathVector;
+	LocationConfig *currLocation = NULL;
+	pathVector.clear();
+	while(!filePath.empty())
+	{
+		pathVector.push_back(filePath);
+		std::cout << filePath << std::endl;
+		size_t slashIdx = filePath.find_last_of('/');
+		if (slashIdx == filePath.npos)
+			break ;
+		filePath.erase(slashIdx);
+	}
+	if (path[0] == '/')
+		pathVector.push_back("/");
+	int	matchOnLevel = pathVector.size();
+
+	for(std::vector<LocationConfig>::iterator it = locations.begin(); it < locations.end(); it++)
+	{
+		if (it->strictMatch && it->uri.compare(path))
+			continue;
+		for (int i = 0; i < matchOnLevel; i++)
+		{
+			if (!it->uri.compare(pathVector[i]) && i < matchOnLevel)
+			{
+				matchOnLevel = i;
+				currLocation = &(*it);
+			}
+		}
+
+		if (!matchOnLevel)
+			break;
+
+	}
+	return (currLocation);
+}
+
+

@@ -1,6 +1,6 @@
 #include "includes/HTTPResponse.hpp"
 
-HTTPResponse::HTTPResponse(HTTPRequest &request) : _request(request)
+HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _request(request)
 {
 	status_code = request.get_status_code();
 	if (status_code)
@@ -18,7 +18,7 @@ HTTPResponse::HTTPResponse(HTTPRequest &request) : _request(request)
 		stat_code_str << status_code;
 		status_line.append(stat_code_str.str());
 		status_line.append(" ");
-		status_line.append(get_status_code_msg(status_code));
+		status_line.append(getStatusCodeMsg(status_code));
 		status_line.append("\r\n");
 		if (_request.headers.find("Connection") == _request.headers.end())
 			response_headers.append("Connection: keep-alive\r\n");

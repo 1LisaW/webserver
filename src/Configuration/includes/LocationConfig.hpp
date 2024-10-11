@@ -6,6 +6,7 @@
 # include <set>
 # include <map>
 # include <iostream>
+# include <sstream>
 # include "AAttribute.hpp"
 # include "Dictionary.hpp"
 
@@ -14,7 +15,9 @@ class LocationConfig: public Attribute
 	private:
 		void setRoot(std::vector<std::string> vector);
 		void setIndex(std::vector<std::string> vector);
+		void setAutoIndex(std::vector<std::string> vector);
 		void setAllowedMethods(std::vector<std::string> vector);
+		void setClientMaxBodySize(std::vector<std::string> vector);
 
 		void setCgiPass(std::vector<std::string> vector);
 		void setCgiIndex(std::vector<std::string> vector);
@@ -25,10 +28,12 @@ class LocationConfig: public Attribute
 		Dictionary &dictionary;
 		std::string modifier;
 		bool	strictMatch;
+		bool	autoindex;
 		std::string uri;
 		std::set<std::string> allowedMethods;
 		std::string root;
 		std::string index;
+		int clientMaxBodySize;
 
 		bool	isCgi;
 		std::string cgiPass;
@@ -36,12 +41,13 @@ class LocationConfig: public Attribute
 		std::string cgiInclude;
 		std::map<std::string, std::string> cgiParams;
 
-		LocationConfig(Dictionary &dictionary, std::map <std::string, std::vector<std::string> > errorPages);
+		LocationConfig(Dictionary &dictionary, std::map <std::string, std::vector<std::string> > errorPages, int clientMaxBodySize);
 		LocationConfig &operator=(const LocationConfig &rhs);
 		~LocationConfig();
 		void	setUri(std::vector<std::string> vector);
 		void	fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary);
 		bool	isValid();
+		bool	isMethodAllowed(std::string);
 };
 
 #endif

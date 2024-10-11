@@ -50,7 +50,49 @@ if (argc < 2)
 		// return(false);
 	// }
   Configuration config(argv[1]);
-  config.printConfigurationData();
+//   config.printConfigurationData();
+  std::string path = "/home/done.html";
+
+	std::string filePath;
+	std::string requestUri = "/hello/folder/pypy/hoho.";
+	// get the location that matches uri of the request
+	LocationConfig *location = config.servers[0].getLocation(requestUri);
+	// if there no location or method is not allowed set error status code
+	if (location == NULL)
+		std::cout << "NO LOCATION" << std::endl;
+		// request->setStatusCode(not_found);
+	else if (!location->isMethodAllowed("GET"))
+		std::cout << "GET is NOT allowded" << std::endl;
+
+		// request->setStatusCode(method_not_allowed);
+	// get path of file
+	else
+	{
+
+		std::string restUriPath;
+		filePath.append(location->root);
+		std::cout << "!!! " << requestUri << " " << filePath << std::endl;
+
+		restUriPath.append(requestUri.substr(filePath.size() - 1));
+
+		filePath.append("/");
+
+		filePath.append(restUriPath);
+
+		// std::cout << "!!! " << location->uri << std::endl;
+		// if (!serverConfig.index.empty() && getUriExtention(filePath).empty())
+			// filePath.append(serverConfig.index);
+		// std::string fileName = getFilePath()
+	}
+	std::cout << filePath << std::endl;
+		std::cout << "!!! Extention " << getUriExtention(filePath) << std::endl;
+
+
+//   LocationConfig *curr = config.servers[0].getLocation(path);
+//   if (curr)
+//   	std::cout << "Location is " <<  curr->uri << std::endl;
+// 	else
+// 	std::cout <<"Location not found"<< std::endl;
   // nameFileOut.close();
   // close(conf_fd);
 }

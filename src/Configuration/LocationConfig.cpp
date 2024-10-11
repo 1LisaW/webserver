@@ -1,9 +1,10 @@
 #include "includes/LocationConfig.hpp"
 
 // Location
-LocationConfig::LocationConfig(Dictionary &dict, std::map<std::string, std::vector<std::string> > serverErrPages) : dictionary(dict)
+LocationConfig::LocationConfig(Dictionary &dict, std::map<std::string, std::vector<std::string> > serverErrPages, int clientMaxBodySizeGlobal) : dictionary(dict)
 {
 	resetToDefault();
+	clientMaxBodySize = clientMaxBodySizeGlobal;
 	std::map<std::string, std::vector<std::string> >::iterator itErrPage;
 
 	for (itErrPage = serverErrPages.begin(); itErrPage != serverErrPages.end(); itErrPage++)
@@ -16,6 +17,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &rhs)
 {
 	resetToDefault();
 	this->dictionary = rhs.dictionary;
+	this->clientMaxBodySize = rhs.clientMaxBodySize;
 
 	std::map<std::string, std::vector<std::string> >::const_iterator itErrPage;
 
@@ -38,6 +40,8 @@ void LocationConfig::resetToDefault()
 	this->allowedMethods.clear();
 	this->root.clear();
 	this->index.clear();
+	this->autoindex = false;
+	this->clientMaxBodySize = -1;
 
 	this->isCgi = false;
 	this->cgiPass.clear();
@@ -52,6 +56,7 @@ void LocationConfig::setUri(std::vector<std::string> vector)
 	if (vector[idx].size() == 1 && (vector[idx][0] == '=' || vector[idx][0] == '~'))
 	{
 		modifier = vector[idx];
+		strictMatch = (vector[idx][0] == '=');
 		idx++;
 	}
 	if (vector.size() != (idx + 2))
@@ -70,6 +75,9 @@ void LocationConfig::setRoot(std::vector<std::string> vector)
 		return;
 	}
 	root = vector[1];
+	size_t rootSize = root.size();
+	if (rootSize > 1 && root[rootSize - 1] == '/')
+		root.erase(rootSize - 1);
 }
 
 void LocationConfig::setIndex(std::vector<std::string> vector)
@@ -81,6 +89,34 @@ void LocationConfig::setIndex(std::vector<std::string> vector)
 	}
 	index = vector[1];
 }
+
+void LocationConfig::setAutoIndex(std::vector<std::string> vector)
+{
+	if (!isValidOneValue(vector))
+	{
+		autoindex = false;
+		return;
+	}
+	if (vector[1].compare("on") && vector[1].compare("off"))
+	{
+		std::cout << "Autoindex can accept only \"on\" and \"off\" values. Autoindex is forcibly set to false." << std::endl;
+		return ;
+	}
+	autoindex = vector[1].compare("off");
+}
+
+void LocationConfig::setClientMaxBodySize(std::vector<std::string> vector)
+{
+	if (!isValidOneDigitValue(vector))
+	{
+		clientMaxBodySize = 0;
+		return;
+	}
+	int i;
+	std::istringstream(vector[1]) >> i;
+	clientMaxBodySize = i;
+}
+
 void LocationConfig::setAllowedMethods(std::vector<std::string> vector)
 {
 	size_t size = vector.size();
@@ -149,6 +185,8 @@ void LocationConfig::fillAttributes(std::vector<std::string> confLineVector, Dic
 		setRoot(confLineVector);
 	else if (!attributeName.compare("index"))
 		setIndex(confLineVector);
+	else if (!attributeName.compare("autoindex"))
+		setAutoIndex(confLineVector);
 	else if (!attributeName.compare("error_page"))
 		addErrorPages(confLineVector);
 	else if (!attributeName.compare("allow_methods"))
@@ -169,3 +207,11 @@ bool LocationConfig::isValid()
 		return (false);
 	return (true);
 }
+
+bool	LocationConfig::isMethodAllowed(std::string method)
+{
+	if (allowedMethods.find(method) != allowedMethods.end())
+		return (true);
+	return (false);
+}
+

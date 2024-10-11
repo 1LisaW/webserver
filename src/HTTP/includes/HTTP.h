@@ -67,7 +67,7 @@ enum status_code_value
 };
 
 // TODO: should this be inline?
-inline std::string get_status_code_msg(status_code_value c)
+inline std::string getStatusCodeMsg(status_code_value c)
 {
 	switch (c)
 	{
@@ -172,21 +172,23 @@ inline std::string get_status_code_msg(status_code_value c)
 	}
 }
 
-inline std::string get_uri_extention(std::string uri)
+inline std::string getUriExtention(std::string uri)
 {
 	std::string fileName = "";
 	fileName.append(uri);
 	if (uri.find_last_of('/') == std::string::npos
 		|| fileName.find_last_of('.') == std::string::npos)
 		return ("");
-	fileName.erase(0, uri.find_last_of('/'));
 	fileName.erase(0, fileName.find_last_of('.') + 1);
+	size_t slashPos = fileName.find_first_of('/');
+	if (slashPos != std::string::npos)
+		fileName.erase(slashPos);
 	return (fileName);
 }
 
 inline std::string getFilePath(std::string path, std::string index)
 {
-	if (get_uri_extention(path).size())
+	if (getUriExtention(path).size())
 		return (path);
 	std::string pathWithIndex = "";
 	pathWithIndex.append(".");

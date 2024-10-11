@@ -2,7 +2,9 @@
 # define SERVERCONFIG_H
 
 # include "LocationConfig.hpp"
+// # include "../../HTTP/includes/HTTP.h"
 # include <sstream>
+# include <algorithm>
 
 
 class ServerConfig: public Attribute
@@ -26,6 +28,7 @@ public:
 	~ServerConfig();
 	void	fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary);
 	bool	isValid();
+	LocationConfig *getLocation(std::string path);
 };
 
 

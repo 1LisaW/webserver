@@ -1,21 +1,18 @@
 #include "includes/WebServer.hpp"
 
-WebServer::WebServer(int argc, char* argv[])
+WebServer::WebServer(ServerConfig &serverConfigElem, Dictionary &dictionaryGlobal):serverConfig(serverConfigElem), dictionary(dictionaryGlobal)
 {
-	struct Config config;
-
-	config.node = NULL;
-	config.service = NULL;
-	if (_parse_config(argc, argv, config))
-	{
-		getaddrinfo(config.node, config.service, &(config.hints), &res);
+		struct addrinfo hints;
+		hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
+		getaddrinfo(serverConfig.serverName.c_str(), serverConfig.listen.c_str(), &(hints), &res);
 		socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		fds[0].fd = socket_fd;
   		fds[0].events = POLLIN;
 		bind(socket_fd, res->ai_addr, res->ai_addrlen);
 		listen(socket_fd, BACKLOG);
 		launch();
-	};
 }
 
 WebServer::~WebServer()
@@ -35,105 +32,100 @@ void WebServer::launch()
 	}
 }
 
-bool WebServer::_parse_config(int argc, char* argv[], struct Config &config)
-{
-	if (argc < 2)
-	{
-		std::cout << "Server requires a configuration file" << std::endl;
-		return(false);
-	}
-	int conf_fd = open(argv[1], O_RDONLY);
-	if (conf_fd < 0)
-	{
-		std::cout << "File " << argv[1] << "don't exist or user has no read permission" << std::endl;
-		return(false);
-	}
-	// TODO:: Read from file
-
-	//Mock for locations
-	locationStr firstLocation;
-	firstLocation.uri.push_back("/");
-	firstLocation.exactMatch = false;
-	firstLocation.allowedMethods.push_back("GET");
-	firstLocation.root = "/www";
-	this->_locations.push_back(firstLocation);
-	locationStr secondLocation;
-	secondLocation.uri.push_back("/cgi-bin");
-	secondLocation.uri.push_back("/");
-	secondLocation.exactMatch = false;
-	secondLocation.allowedMethods.push_back("POST");
-	secondLocation.allowedMethods.push_back("DELETE");
-	secondLocation.root = "/cgi-bin";
-	this->_locations.push_back(secondLocation);
-
-
-
-	close(conf_fd);
-	config.node = "localhost";
-	config.service = "3000";
-	// (config.hints) = (struct addrinfo){};
-	config.hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
-	config.hints.ai_socktype = SOCK_STREAM;
-	config.hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
-	return (true);
-}
-
 void	WebServer::_accept()
 {
 	new_socket_fd = accept(socket_fd, (res->ai_addr), &(res->ai_addrlen));
 	read(new_socket_fd, _buffer, 30000);
-// struct sockaddr_in	address =
 }
 
 void	WebServer::_handle()
 {
 std::cout << _buffer << std::endl;
-// std::cout << "HTTPREQUEST" << std::endl;
-// HTTPRequest request(_buffer);
-curr_request = new HTTPRequest(_buffer, WebServer::dictionary);
+curr_request = new HTTPRequest(_buffer, dictionary);
 }
 
 void	WebServer::_respond()
 {
-	// std::string serv_msg = "Hello from serv\n";
-	// write(new_socket_fd, serv_msg.c_str(), serv_msg.length());
-	// char arr[200]="HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length: 16\n\n<h1>testing</h1>";
-	// int send_res=
+	std::string responseFile = getResponseFilePath(curr_request, serverConfig);
 	HTTPResponse response(*curr_request);
-	// std::cout << "---- RESPONSE: " << curr_request->get_path() << std::endl;
-	// std::cout << response.response << std::endl;
-	// std::cout << "RESPONSE ENDS HERE ----- " << std::endl;
 	delete curr_request;
-	// send(new_socket_fd,arr,sizeof(arr),0);
 	send(new_socket_fd,response.response.c_str(), response.response.size(),0);
 	close(new_socket_fd);
 }
 
-locationStr *WebServer::getLocation(std::string path)
+std::string WebServer::getResponseErrorFilePath(LocationConfig *location, enum status_code_value statusCode)
 {
-	// locationStr *location = NULL;
-
-	std::vector<std::string> pathVector;
-	std::string pathString = path;
-	while (pathString.size())
-    {
-		pathVector.push_back(pathString);
-		pathString.erase(pathString.find_last_of('/'));
-	}
-	std::string rootPath = path.substr(0, path.find_first_of("/"));
-	if (rootPath.size())
-		pathVector.push_back(rootPath);
-
-	std::vector<locationStr>::iterator iter;
-	// int	deepLevelPath = 1000;
-	iter = _locations.begin();
-	while (iter != _locations.end())
+	if (!location)
+		return ("");
+	std::vector<std::string> errPathVector;
+	std::string errPagePath;
+	switch (statusCode)
 	{
-		if (iter->exactMatch && iter->root.compare(path))
-			continue ;
-		iter++;
+	case forbidden:
+		errPathVector =location->errorPages["403"];
+		break;
+	case not_found:
+		errPathVector =location->errorPages["404"];
+		break;
+	case method_not_allowed:
+		errPathVector =location->errorPages["405"];
+		break;
+	default:
+		break;
 	}
-	return (NULL);
+	if (!errPathVector.size())
+		return ("");
+	errPagePath.append(errPathVector[0]);
+	errPagePath.append(errPathVector[1]);
+	int fileFd = open(errPagePath.c_str(), O_RDONLY);
+	if (fileFd < 0)
+	{
+		errPagePath.clear();
+	}
+	else
+		close(fileFd);
+	return (errPagePath);
 }
 
-Dictionary WebServer::dictionary = Dictionary();
+std::string WebServer::getResponseFilePath(HTTPRequest *request, ServerConfig &serverConfig)
+{
+	std::string filePath;
+	std::string requestUri = request->get_path();
+	// get the location that matches uri of the request
+	LocationConfig *location = serverConfig.getLocation(requestUri);
+	// if there no location or method is not allowed set error status code
+	if (location == NULL)
+		request->setStatusCode(not_found);
+	else if (!location->isMethodAllowed(request->get_method()))
+		request->setStatusCode(method_not_allowed);
+	// get path of file
+	else
+	{
+		std::string restUriPath;
+		filePath.append(location->root);
+		restUriPath.append(requestUri.substr(filePath.size() - 1));
+		filePath.append("/");
+		filePath.append(restUriPath);
+
+		std::string fileExtention = getUriExtention(filePath);
+		if (!fileExtention.size())
+		{
+			filePath.append("/");
+			filePath.append(location->index);
+		}
+		int fileFd = open(filePath.c_str(), O_RDONLY);
+		if (fileFd < 0)
+		{
+			request->setStatusCode(not_found);
+		}
+		else
+			close(fileFd);
+		if (request->get_status_code() && request->get_status_code() != ok)
+		{
+			filePath.clear();
+			filePath.append(getResponseErrorFilePath(location, request->get_status_code()));
+		}
+	}
+	return (filePath);
+}
+
