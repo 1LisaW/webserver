@@ -25,7 +25,7 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 	}
 	std::cout << "3 RESPONSE " << std::endl;
 	response_headers.append("Content-Type: ");
-	
+
 	std::string fileExtention = getUriExtention(filePath);
 
 	//  fileExtention = getUriExtention(filePath);
@@ -60,7 +60,7 @@ void HTTPResponse::get()
 
 void HTTPResponse::_set_content(std::string filePath)
 {
-	if (!filePath.empty())
+	if (filePath.empty())
 	{
 		content.clear();
 		content.append(getDefaultErrorPageContent(_request.get_status_code()));

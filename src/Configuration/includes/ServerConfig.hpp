@@ -2,7 +2,6 @@
 # define SERVERCONFIG_H
 
 # include "LocationConfig.hpp"
-// # include "../../HTTP/includes/HTTP.h"
 # include <sstream>
 # include <algorithm>
 
@@ -17,7 +16,7 @@ private:
 	void	resetToDefault();
 
 public:
-	std::string listen;
+	std::set<std::string> listen;
 	std::string serverName;
 	int clientMaxBodySize;
 	std::string index;

@@ -32,10 +32,10 @@ void ServerConfig::setListen(std::vector<std::string> vector)
 
 	if (!isValidOneDigitValue(vector))
 	{
-		listen = "";
+		listen.clear();
 		return;
 	}
-	listen = vector[1];
+	listen.insert(vector[1]);
 }
 
 void ServerConfig::setServerName(std::vector<std::string> vector)

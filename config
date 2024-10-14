@@ -3,10 +3,11 @@
 
 server {
     listen  5000;
+    listen  5050;
     server_name localhost;
 
     # Default Error Pages
-    error_page 404 /error_pages 404.html;
+    # error_page 404 /error_pages 404.html;
     error_page 500 502 503 504 /error_pages 50x.html;
 
     # Limit client body size
@@ -26,6 +27,13 @@ server {
         autoindex on;  # Turn on directory listing
         allow_methods GET;
         error_page 404 /error_pages 404.html;
+
+    }
+    location /subpage/sub {
+        root /subpage/sub2;
+        index index.html;
+        autoindex on;  # Turn on directory listing
+        allow_methods GET;
 
     }
 

@@ -19,19 +19,19 @@
 class WebServer
 {
 private:
-	int		socket_fd;
-	int		new_socket_fd;
+	std::map<std::string, int> socket_fds;
+	std::map<std::string, int>	newSocketFds;
 	struct pollfd fds[200];
 	char	_buffer[30000];
 	struct addrinfo *res;
 
 	ServerConfig &serverConfig;
 	Dictionary &dictionary;
-	HTTPRequest *curr_request;
+	// HTTPRequest *curr_request;
 
 	void	_accept();
-	void	_handle();
-	void	_respond();
+	HTTPRequest	*_handle(char *buffer);
+	void	_respond(int newSocketFd, HTTPRequest *request);
 public:
 	WebServer(ServerConfig &ServerConfig, Dictionary &dictionary);
 	~WebServer();

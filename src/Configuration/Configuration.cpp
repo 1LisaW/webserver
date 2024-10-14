@@ -135,7 +135,10 @@ void Configuration::printConfigurationData(){
 	while (currServer != servers.end())
 	{
 		std::cout << "SERVER number " << serverIdx << std::endl;
-		std::cout << "--- listen: " << currServer->listen << std::endl;
+		std::cout << "--- listen: ";
+		for (std::set<std::string>::iterator port = currServer->listen.begin(); port != currServer->listen.end(); port++)
+		std::cout << *port << " ";
+		std::cout << std::endl;
 		std::cout << "--- index: " << currServer->index << std::endl;
 		std::cout << "--- serverName: " << currServer->serverName << std::endl;
 		std::cout << "--- clientMaxBodySize: " << currServer->clientMaxBodySize << std::endl;
