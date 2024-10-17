@@ -1,4 +1,4 @@
-#ifndef SERVERSOCKET_T
+#ifndef SERVERSOCKET_H
 # define SERVERSOCKET_H
 
 # include <string>

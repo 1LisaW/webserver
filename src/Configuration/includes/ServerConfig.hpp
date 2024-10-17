@@ -9,7 +9,7 @@
 class ServerConfig: public Attribute
 {
 private:
-	bool	is_valid;
+	// bool	is_valid;
 	void	setListen(std::vector<std::string> vector);
 	void	setServerName(std::vector<std::string> vector);
 	void	setClientMaxBodySize(std::vector<std::string> vector);
