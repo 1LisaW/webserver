@@ -93,6 +93,8 @@ void ServerConfig::fillAttributes(std::vector<std::string> confLineVector, Dicti
 		setClientMaxBodySize(confLineVector);
 	else if (!attributeName.compare("error_page"))
 		addErrorPages(confLineVector);
+	else if (!attributeName.compare("return"))
+		setRedirection(confLineVector);
 }
 
 bool ServerConfig::isValid()
@@ -149,4 +151,9 @@ std::set<std::string> ServerConfig::getServerNameAliases()
 std::set<std::string> ServerConfig::getListenPorts()
 {
 	return (this->listen);
+}
+
+std::pair<std::string, std::string> ServerConfig::getRedirection()
+{
+	return (this->redirection);
 }

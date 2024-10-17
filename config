@@ -34,7 +34,7 @@ server {
         index index.html;
         autoindex on;  # Turn on directory listing
         allow_methods GET;
-
+        return 301 localhost::5000/subpage;
     }
 
     # Execute CGI for .php files
@@ -81,6 +81,7 @@ server {
         index index.html;
         autoindex on;  # Turn on directory listing
         allow_methods GET;
+        
 
     }
 
@@ -99,6 +100,7 @@ server {
     listen 8080;
     server_name localhost tklimova;
     index index.html
+    return 301 https://www.google.com$request_uri;
 
     # Default Error Pages
     error_page 404 /error_pages 404.html;

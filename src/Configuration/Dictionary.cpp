@@ -16,8 +16,8 @@ void Dictionary::_setConfigDictionary()
 	std::string blockNames[] = {"server", "location"};
 	for (int i = 0; i < 2; i++)
 		configBlockLevels[blockNames[i]] = i;
-	std::string serverAttributes[] = {"listen", "server_name", "error_page", "client_max_body_size", "location"};
-	std::string locationAttributes[] = {"root", "index", "allow_methods", "error_page", "autoindex", "cgi_pass", "cgi_index", "include", "cgi_param"};
+	std::string serverAttributes[] = {"listen", "server_name", "error_page", "client_max_body_size", "location", "return"};
+	std::string locationAttributes[] = {"root", "index", "allow_methods", "error_page", "autoindex", "cgi_pass", "cgi_index", "include", "cgi_param", "return"};
 	configServerAttributes = std::set<std::string>(serverAttributes, serverAttributes + sizeof(serverAttributes) / sizeof(serverAttributes[0]));
 	configLocationAttributes = std::set<std::string>(locationAttributes, locationAttributes + sizeof(locationAttributes) / sizeof(locationAttributes[0]));
 }

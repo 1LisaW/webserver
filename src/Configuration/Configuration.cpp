@@ -158,6 +158,11 @@ void Configuration::printConfigurationData()
 		for (std::set<std::string>::iterator serverNameAlias = serverNameAliases.begin(); serverNameAlias != serverNameAliases.end(); serverNameAlias++)
 		std::cout << *serverNameAlias << " ";
 		std::cout << std::endl;
+		std::pair<std::string, std::string> redir = currServer->getRedirection();
+		if (redir.first.size())
+		{
+			std::cout << "--- redirection port: " << redir.first << " url " << redir.second << std::endl;
+		}
 		std::cout << "--- clientMaxBodySize: " << currServer->clientMaxBodySize << std::endl;
 		std::cout << "--- ERROR PAGES: " << std::endl;
 		std::map<std::string, std::vector<std::string> >::iterator itErr;
@@ -198,6 +203,11 @@ void Configuration::printConfigurationData()
 				std::cout << itMethod->data() << " ";
 			}
 			std::cout << "]" << std::endl;
+			redir = currLocation->getRedirection();
+			if (redir.first.size())
+			{
+				std::cout << "--- redirection port: " << redir.first << " url " << redir.second << std::endl;
+			}
 			std::cout << "------ ERROR PAGES: " << std::endl;
 
 			for (itErr = currLocation->errorPages.begin(); itErr != currLocation->errorPages.end(); itErr++)
@@ -363,6 +373,7 @@ void Configuration::start()
 				WebServer *currServer = _serverSockets[port]->getServer(port);
 				std::cout << "SERVER " << currServer->getServerNameAliases().begin()._M_node << std::endl;
 				std::cout << " currServer " << *currServer->getServerNameAliases().begin() << std::endl;
+
 
 				std::string responseFile = currServer->getResponseFilePath(request);
 				HTTPResponse response(*request, responseFile);

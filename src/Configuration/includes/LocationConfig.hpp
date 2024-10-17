@@ -44,6 +44,7 @@ class LocationConfig: public Attribute
 		LocationConfig(Dictionary &dictionary, std::map <std::string, std::vector<std::string> > errorPages, int clientMaxBodySize);
 		LocationConfig &operator=(const LocationConfig &rhs);
 		~LocationConfig();
+		std::pair<std::string, std::string> getRedirection();
 		void	setUri(std::vector<std::string> vector);
 		void	fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary);
 		bool	isValid();

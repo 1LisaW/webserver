@@ -217,6 +217,8 @@ void LocationConfig::fillAttributes(std::vector<std::string> confLineVector, Dic
 		setCgiInclude(confLineVector);
 	else if (!attributeName.compare("cgi_param"))
 		setCgiParams(confLineVector);
+	else if (!attributeName.compare("return"))
+		setRedirection(confLineVector);
 }
 
 bool LocationConfig::isValid()
@@ -233,3 +235,7 @@ bool	LocationConfig::isMethodAllowed(std::string method)
 	return (false);
 }
 
+std::pair<std::string, std::string> LocationConfig::getRedirection()
+{
+	return (this->redirection);
+}
