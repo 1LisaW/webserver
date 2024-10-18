@@ -19,6 +19,7 @@ server {
         index index.html;
         autoindex off;  # Turn off directory listing
         allow_methods GET POST;  # Accepted HTTP methods
+        return 301 localhost::5000/subpage;
     }
 
     location /subpage {
@@ -81,7 +82,7 @@ server {
         index index.html;
         autoindex on;  # Turn on directory listing
         allow_methods GET;
-        
+
 
     }
 
@@ -99,8 +100,7 @@ server {
 server {
     listen 8080;
     server_name localhost tklimova;
-    index index.html
-    return 301 https://www.google.com$request_uri;
+    # return 301 https://www.google.com$request_uri;
 
     # Default Error Pages
     error_page 404 /error_pages 404.html;
@@ -108,6 +108,14 @@ server {
 
     # Limit client body size
     client_max_body_size 200;
+
+ # Root location
+    location / {
+        root /www;
+        error_page 404 /error_pages 404.html;
+        autoindex on;  # Turn off directory listing
+        allow_methods GET POST;  # Accepted HTTP methods
+    }
 
     location /subpage {
         root /server/page2;

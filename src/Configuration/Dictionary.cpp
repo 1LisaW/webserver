@@ -20,6 +20,8 @@ void Dictionary::_setConfigDictionary()
 	std::string locationAttributes[] = {"root", "index", "allow_methods", "error_page", "autoindex", "cgi_pass", "cgi_index", "include", "cgi_param", "return"};
 	configServerAttributes = std::set<std::string>(serverAttributes, serverAttributes + sizeof(serverAttributes) / sizeof(serverAttributes[0]));
 	configLocationAttributes = std::set<std::string>(locationAttributes, locationAttributes + sizeof(locationAttributes) / sizeof(locationAttributes[0]));
+
+	configVariables["REQUEST_URI"] = "$request_uri";
 }
 
 int	Dictionary::getConfigBlockLevel(std::string blockName)
@@ -91,3 +93,9 @@ std::string Dictionary::getContentTypeFromDictionary(std::string type)
 	return (contentTypes[type]);
 }
 
+std::string Dictionary::getConfigVariable(std::string alias)
+{
+	if (configVariables.find(alias) == configVariables.end())
+		return ("");
+	return (configVariables[alias]);
+}

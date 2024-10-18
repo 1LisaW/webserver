@@ -19,6 +19,7 @@ class Attribute
 		virtual ~Attribute()=0;
 		bool isValidOneValue(std::vector<std::string> vector);
 		bool isValidOneDigitValue(std::vector<std::string> vector);
+		std::pair<std::string, std::string> getRedirection();
 };
 
 #endif

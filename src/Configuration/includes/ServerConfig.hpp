@@ -17,7 +17,6 @@ private:
 	void	resetToDefault();
 	std::set<std::string> listen;
 	std::set<std::string> serverNameAliases;
-	std::pair<std::string, std::string> redirection;
 
 public:
 	int clientMaxBodySize;
@@ -32,7 +31,6 @@ public:
 	LocationConfig *getLocation(std::string path);
 	std::set<std::string> getServerNameAliases();
 	std::set<std::string> getListenPorts();
-	std::pair<std::string, std::string> getRedirection();
 };
 
 

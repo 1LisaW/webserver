@@ -49,6 +49,7 @@ void LocationConfig::resetToDefault()
 	this->cgiInclude.clear();
 	this->cgiParams.clear();
 	this->errorPages.clear();
+	this->redirection = std::make_pair("","");
 }
 void LocationConfig::setUri(std::vector<std::string> vector)
 {
@@ -235,7 +236,3 @@ bool	LocationConfig::isMethodAllowed(std::string method)
 	return (false);
 }
 
-std::pair<std::string, std::string> LocationConfig::getRedirection()
-{
-	return (this->redirection);
-}

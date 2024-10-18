@@ -16,6 +16,7 @@ private:
     std::string protocol_v;
     struct LocationStr *location;
     std::string pathToFile;
+    enum eRequestType _requestType;
 
 public:
     Dictionary &dictionary;
@@ -28,6 +29,8 @@ public:
     std::string get_method();
     std::string get_path();
     std::string get_protocol_v();
+    enum eRequestType getRequestType();
+    void setRequestType(enum eRequestType requestType);
 };
 
 // const std::set<std::string> HTTPRequest::METHODS = {"GET", "POST", "DELETE"};

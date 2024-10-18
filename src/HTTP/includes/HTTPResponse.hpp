@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cstdio>
 # include <string>
+#include <dirent.h>
 
 
 class HTTPResponse
@@ -23,6 +24,7 @@ public:
 	std::string response;
 	void	get();
 	std::string getDefaultErrorPageContent(enum status_code_value statusCode);
+	std::string getDirectoryListing(std::string filePath);
 };
 
 #endif

@@ -5,7 +5,6 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 	status_code = _request.get_status_code();
 	if (!status_code)
 		status_code = ok;
-	std::cout << "1 RESPONSE " << std::endl;
 	status_line.append(_request.get_protocol_v());
 	status_line.append(" ");
 	std::ostringstream stat_code_str;
@@ -14,7 +13,18 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 	status_line.append(" ");
 	status_line.append(getStatusCodeMsg(status_code));
 	status_line.append("\r\n");
-	std::cout << "2 RESPONSE " << std::endl;
+	response.append(status_line);
+
+	if (_request.getRequestType() == REDIRECT_REQUEST)
+	{
+		response_headers.append("Location: ");
+		response_headers.append(filePath);
+		response_headers.append("\r\n");
+		response_headers.append("Content-Type: text/plain; charset=utf-8\r\n");
+		response.append(response_headers);
+		return ;
+	}
+
 	if (_request.headers.find("Connection") == _request.headers.end())
 		response_headers.append("Connection: keep-alive\r\n");
 	else
@@ -23,19 +33,20 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 		response_headers.append(_request.headers["Connection"]);
 		response_headers.append("\r\n");
 	}
-	std::cout << "3 RESPONSE " << std::endl;
 	response_headers.append("Content-Type: ");
 
 	std::string fileExtention = getUriExtention(filePath);
-
+	if (request.getRequestType() == GET_DIR_LIST)
+		fileExtention.replace(fileExtention.begin(), fileExtention.end(), "html");
 	//  fileExtention = getUriExtention(filePath);
-	std::cout << "fileExtention " << fileExtention << " filePath " << filePath.empty() << " getContentTypeFromDictionary " <<_request.dictionary.getContentTypeFromDictionary(fileExtention) << " " <<_request.dictionary.getContentTypeFromDictionary("html") << std::endl;
+	// std::cout << "fileExtention " << fileExtention << " filePath " << filePath.empty() << " getContentTypeFromDictionary " <<_request.dictionary.getContentTypeFromDictionary(fileExtention) << " " <<_request.dictionary.getContentTypeFromDictionary("html") << std::endl;
 	response_headers.append(_request.dictionary.getContentTypeFromDictionary(fileExtention));
 	response_headers.append("\r\n");
-	std::cout << "4 RESPONSE " << std::endl;
-	_set_content(filePath);
-	std::cout << "5 RESPONSE " << std::endl;
-	response.append(status_line);
+	// if ()
+	if (request.getRequestType() == GET_DIR_LIST)
+		content.append(getDirectoryListing(filePath));
+	else
+		_set_content(filePath);
 	response.append(response_headers);
 	response.append("Content-Length: ");
 	std::ostringstream cont_l;
@@ -43,11 +54,10 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 	response.append(cont_l.str());
 	response.append("\r\n");
 	response.append("\r\n");
-	std::cout << "6 RESPONSE " << std::endl;
 	response.append(content);
 
-	if (request.get_method().compare("GET"))
-		get();
+	// if (request.get_method().compare("GET"))
+	// 	get();
 }
 
 HTTPResponse::~HTTPResponse()
@@ -105,5 +115,43 @@ std::string HTTPResponse::getDefaultErrorPageContent(enum status_code_value stat
 	content.append("</h1>\r\n");
     content.append("	</div>\r\n");
 	content.append("</div>");
+	return (content);
+}
+
+std::string HTTPResponse::getDirectoryListing(std::string filePath)
+{
+	std::string content;
+	content.append("<!DOCTYPE html>");
+	content.append("<head>");
+	content.append("</head>");
+	DIR *dir;
+	struct dirent *ent;
+	std::string relativePath = ".";
+	relativePath.append(filePath);
+	if ((dir = opendir (relativePath.c_str())) != NULL) {
+  	/* print all the files and directories within directory */
+		content.append("<h1> List of directory files: </h1>\r\n");
+		content.append("<div style=\"display: table; width: 100%; text-align: left; margin-left:10px \">\r\n");
+		while ((ent = readdir(dir)) != NULL)
+		{
+		    content.append("	<div class=\"fof\" style=\"display: table-row; height: 25px; vertical-align: middle; \"\r\n>");
+			content.append("<a href=\"");
+			content.append(ent->d_name);
+			content.append("\">\r\n");
+			content.append(ent->d_name);
+			// printf ("%s\n", ent->d_name);
+			content.append("</a>\r\n");
+			content.append("</div>\r\n");
+
+		}
+		content.append("</div>\r\n");
+		closedir (dir);
+
+	}
+	else {
+  	/* could not open directory */
+  		perror ("");
+  	// return EXIT_FAILURE;
+	}
 	return (content);
 }

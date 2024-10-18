@@ -3,6 +3,7 @@
 
 HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
 {
+    _requestType = UNKNOWN_REQUEST_TYPE;
     status_code = uninitialized;
     // 1. Parse first string from request
     buff.append(buffer);
@@ -22,7 +23,14 @@ HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
         std::cout << "NOT FOUND! " << std::endl;
     }
     std::cout << "Method is " << method << std::endl;
-    // TODO:: compare method to allowed methods for location
+    {
+        if (!method.compare("GET"))
+            _requestType = GET_FILE;
+        else if (!method.compare("POST"))
+            _requestType = POST_DATA;
+        else if (!method.compare("DELETE"))
+            _requestType = DELETE_DATA;
+    }
     //  set path
     this->path.append(buff.substr(0, buff.find_first_of(' ')));
     buff.erase(0, this->path.length());
@@ -101,3 +109,13 @@ std::string HTTPRequest::get_protocol_v()
 {
     return (protocol_v);
 };
+
+enum eRequestType HTTPRequest::getRequestType(){
+    return (_requestType);
+};
+
+void HTTPRequest::setRequestType(enum eRequestType requestType)
+{
+    _requestType = requestType;
+};
+

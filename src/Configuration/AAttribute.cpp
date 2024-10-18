@@ -55,7 +55,7 @@ void Attribute::addErrorPages(std::vector<std::string> vector)
 
 void	Attribute::setRedirection(std::vector<std::string> vector)
 {
-		if (vector.size() != 3)
+	if (vector.size() != 3)
 	{
 		std::cout << "Instruction \"" << vector[0] << "\" must have 2 values: status code and url" << std::endl;
 		return;
@@ -66,4 +66,10 @@ void	Attribute::setRedirection(std::vector<std::string> vector)
 		return;
 	}
 	redirection = std::make_pair(vector[1], vector[2]);
+}
+
+
+std::pair<std::string, std::string> Attribute::getRedirection()
+{
+	return (this->redirection);
 }

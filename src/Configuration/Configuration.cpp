@@ -203,10 +203,10 @@ void Configuration::printConfigurationData()
 				std::cout << itMethod->data() << " ";
 			}
 			std::cout << "]" << std::endl;
-			redir = currLocation->getRedirection();
-			if (redir.first.size())
+			std::pair<std::string, std::string> redirLoc = currLocation->getRedirection();
+			if (redirLoc.first.size())
 			{
-				std::cout << "--- redirection port: " << redir.first << " url " << redir.second << std::endl;
+				std::cout << "--- redirection port: " << redirLoc.first << " url " << redirLoc.second << std::endl;
 			}
 			std::cout << "------ ERROR PAGES: " << std::endl;
 

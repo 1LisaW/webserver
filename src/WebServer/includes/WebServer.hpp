@@ -8,6 +8,7 @@
 # include <sys/socket.h>
 # include <netdb.h>
 #include <sys/poll.h>
+# include <algorithm>
 
 # include "../../Configuration/includes/Dictionary.hpp"
 # include "../../Configuration/includes/ServerConfig.hpp"
@@ -41,6 +42,7 @@ public:
 	std::set<std::string> getServerNameAliases();
 	std::string getResponseErrorFilePath(LocationConfig *location, enum status_code_value statusCode);
 	std::string getResponseFilePath(HTTPRequest *request);
+	std::string getRedirectionPath(std::string &requestUri, LocationConfig *location, HTTPRequest *request);
 };
 
 #endif

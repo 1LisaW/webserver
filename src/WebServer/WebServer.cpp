@@ -110,13 +110,53 @@ std::string WebServer::getResponseErrorFilePath(LocationConfig *location, enum s
 	return (errPagePath);
 }
 
+std::string WebServer::getRedirectionPath(std::string &requestUri, LocationConfig *location, HTTPRequest *request)
+{
+	std::string redirectionUri = "";
+
+	//get location redirection
+	if (location && !location->getRedirection().first.empty())
+	{
+		request->setRequestType(REDIRECT_REQUEST);
+		redirectionUri.append(location->getRedirection().second);
+		request->setStatusCode(moved_permanently);
+	}
+	std::pair<std::string, std::string> serverRedirection = serverConfig->getRedirection();
+	// get server redirection
+	std::string serverStatusCode = serverRedirection.first;
+	if (request->getRequestType() != REDIRECT_REQUEST && !serverStatusCode.empty())
+	{
+		request->setRequestType(REDIRECT_REQUEST);
+		redirectionUri.append(serverRedirection.second);
+		request->setStatusCode(moved_permanently);
+	}
+	std::string confVarRedirUri = dictionary.getConfigVariable("REQUEST_URI");
+	size_t confVarRedirUriSize = confVarRedirUri.size();
+	if (confVarRedirUriSize)
+	{
+		size_t pos = redirectionUri.find(confVarRedirUri);
+		if (pos == std::string::npos)
+			return (redirectionUri);
+		redirectionUri.replace(redirectionUri.begin() + pos, redirectionUri.end() + pos + confVarRedirUriSize, requestUri);
+	}
+	return (redirectionUri);
+}
+
+
 std::string WebServer::getResponseFilePath(HTTPRequest *request)
 {
 	std::string filePath;
 
 	std::string requestUri = request->get_path();
+
 	// get the location that matches uri of the request
 	LocationConfig *location = serverConfig->getLocation(requestUri);
+
+	// redirection
+	filePath = getRedirectionPath(requestUri, location, request);
+	if (request->getRequestType() == REDIRECT_REQUEST)
+		return (filePath);
+
 	// if there no location or method is not allowed set error status code
 	if (location == NULL)
 		request->setStatusCode(not_found);
@@ -140,6 +180,25 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 		filePath.append(restUriPath);
 
 		std::string fileExtention = getUriExtention(filePath);
+		if (location->autoindex && !fileExtention.size() && location->index.empty())
+		{
+			if (request->getRequestType() == GET_FILE)
+				request->setRequestType(GET_DIR_LIST);
+			DIR *dir;
+	// struct dirent *ent;
+			std::string relativePath = ".";
+			relativePath.append(filePath);
+			if ((dir = opendir(relativePath.c_str())) != NULL)
+			{
+				std::cout << "FILE DIR IS AVAILABLE " << filePath << std::endl;
+				closedir (dir);
+				return (filePath);
+			}
+			std::cout << "FILE DIR IS NOT AVAILABLE " << filePath << std::endl;
+
+			closedir (dir);
+			request->setStatusCode(not_found);
+		}
 		if (!fileExtention.size())
 		{
 			filePath.append("/");

@@ -26,6 +26,7 @@ void ServerConfig::resetToDefault()
 	this->index.clear();
 	this->locations.clear();
 	this->errorPages.clear();
+	this->redirection = std::make_pair("","");
 }
 
 void ServerConfig::setListen(std::vector<std::string> vector)
@@ -143,7 +144,6 @@ LocationConfig *ServerConfig::getLocation(std::string path)
 	return (currLocation);
 }
 
-// std::set<std::string> ServerConfig
 std::set<std::string> ServerConfig::getServerNameAliases()
 {
 	return (this->serverNameAliases);
@@ -151,9 +151,4 @@ std::set<std::string> ServerConfig::getServerNameAliases()
 std::set<std::string> ServerConfig::getListenPorts()
 {
 	return (this->listen);
-}
-
-std::pair<std::string, std::string> ServerConfig::getRedirection()
-{
-	return (this->redirection);
 }
