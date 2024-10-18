@@ -149,6 +149,14 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 
 	std::string requestUri = request->get_path();
 
+	// check is it cgi
+	std::string cgiExtention = serverConfig->getCgiExtentionFromUri(requestUri);
+	if (!cgiExtention.empty())
+	{
+		request->setRequestType(CGI);
+		return (filePath);
+	}
+
 	// get the location that matches uri of the request
 	LocationConfig *location = serverConfig->getLocation(requestUri);
 

@@ -22,6 +22,15 @@ void Dictionary::_setConfigDictionary()
 	configLocationAttributes = std::set<std::string>(locationAttributes, locationAttributes + sizeof(locationAttributes) / sizeof(locationAttributes[0]));
 
 	configVariables["REQUEST_URI"] = "$request_uri";
+	std::string cgiExtensions[] = {".php", ".py"};
+	for (int i = 0; i < 2; i++)
+		supportedCGIExtensions[cgiExtensions[i]] = cgiExtensions->substr(1);
+	supportedCGIExtensions["php"] = "php";
+	supportedCGIExtensions["py"] = "python3";
+	// cgiExtensions.
+	// for ()
+	// supportedCGIExtensions[".php"] = "php";
+	// supportedCGIExtensions[".py"] = "py";
 }
 
 int	Dictionary::getConfigBlockLevel(std::string blockName)

@@ -33,7 +33,7 @@ void Configuration::parseConfig()
 	std::string configLine;
 	std::vector<std::string> confLineVector;
 
-	ServerConfig *server = new ServerConfig();
+	ServerConfig *server = new ServerConfig(dictionary);
 	LocationConfig location(dictionary, server->errorPages, server->clientMaxBodySize);
 
 	while (std::getline(nameFileOut, configLine))
@@ -72,7 +72,7 @@ void Configuration::parseConfig()
 				{
 				case 1:
 					if (location.isValid())
-						server->locations.push_back(location);
+						server->addLocation(location);
 					else
 					{
 						std::cout << "ERROR WITH VALIDATION OF LOCATION on line " << lineNb << std::endl;
@@ -88,7 +88,7 @@ void Configuration::parseConfig()
 						delete server;
 					// 	exit(1);
 					}
-					server = new ServerConfig();
+					server = new ServerConfig(dictionary);
 				default:
 					break;
 				}
@@ -121,7 +121,7 @@ void Configuration::parseConfig()
 				switch (dictionary.getConfigBlockLevel(blockInProgressStack.top()))
 				{
 				case 0:
-					server->fillAttributes(confLineVector, dictionary);
+					server->fillAttributes(confLineVector);
 					break;
 				case 1:
 					location.fillAttributes(confLineVector, dictionary);

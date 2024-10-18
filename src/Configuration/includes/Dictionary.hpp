@@ -30,6 +30,8 @@ class Dictionary
 		std::set<std::string> locationsAttributes;
 
 		std::map<std::string, std::string> configVariables;
+		std::map<std::string, std::string> supportedCGIExtensions;
+		std::map<std::string, std::string> supportedCGIExecutors;
 
 		void _setContentTypes();
 		void _setMethods();

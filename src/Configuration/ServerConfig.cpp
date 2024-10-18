@@ -1,7 +1,7 @@
 #include "includes/ServerConfig.hpp"
 
 // ServerConfig.
-ServerConfig::ServerConfig()
+ServerConfig::ServerConfig(Dictionary &dictionary): _dictionary(dictionary)
 {
 	resetToDefault();
 }
@@ -27,6 +27,7 @@ void ServerConfig::resetToDefault()
 	this->locations.clear();
 	this->errorPages.clear();
 	this->redirection = std::make_pair("","");
+	this->supportedCgiExtentions.clear();
 }
 
 void ServerConfig::setListen(std::vector<std::string> vector)
@@ -78,9 +79,9 @@ void ServerConfig::setIndex(std::vector<std::string> vector)
 	index = vector[1];
 }
 
-void ServerConfig::fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary)
+void ServerConfig::fillAttributes(std::vector<std::string> confLineVector)
 {
-	if (!dictionary.isAttributeInServerDictionary(confLineVector[0]))
+	if (!_dictionary.isAttributeInServerDictionary(confLineVector[0]))
 	{
 		std::cout << "Attribute of server \"" << confLineVector[0] << "\" not supported." << std::endl;
 		return;
@@ -151,4 +152,28 @@ std::set<std::string> ServerConfig::getServerNameAliases()
 std::set<std::string> ServerConfig::getListenPorts()
 {
 	return (this->listen);
+}
+
+void ServerConfig::addLocation(LocationConfig location)
+{
+	LocationConfig *sameLocation = this->getLocation(location.uri);
+	if (sameLocation)
+		sameLocation = &location;
+	else
+		this->locations.push_back(location);
+	if (!location.isCgi)
+		return ;
+	std::string cgiExtention = location.uri;
+	cgiExtention.erase(0, cgiExtention.find_first_of('.'));
+	cgiExtention.erase(cgiExtention.find_first_of('$'));
+	supportedCgiExtentions[cgiExtention] = location.uri;
+}
+
+std::string ServerConfig::getCgiExtentionFromUri(std::string uri)
+{
+	size_t pos = uri.find_last_of('.');
+	if (pos == std::string::npos || uri.size() - pos < 3)
+		return ("");
+	size_t endPos = uri.substr(pos).find_first_not_of("abcdefghijklmnopqrstuvwxyz");
+	return (uri.substr(pos, endPos));
 }
