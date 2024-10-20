@@ -155,3 +155,23 @@ std::string HTTPResponse::getDirectoryListing(std::string filePath)
 	}
 	return (content);
 }
+
+void HTTPResponse::urlEncode(std::string &string)
+{
+    std::string allowedChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~";
+    std::string hexChars = allowedChars.substr(0, 16);
+    char charToEncode;
+    size_t posToEncode = string.find_first_not_of(allowedChars, 0);
+    while (
+        (posToEncode !=std::string::npos)
+        &&(posToEncode< string.size())
+        )
+    {
+        charToEncode=string[posToEncode];
+        string[posToEncode]='%';
+        string.insert(string.begin() + posToEncode + 1,hexChars[charToEncode&0xf]);
+        string.insert(string.begin() + posToEncode + 1,hexChars[charToEncode>>4]);
+        posToEncode+=3;
+        posToEncode = string.find_first_not_of(allowedChars, posToEncode);
+    }
+}

@@ -50,6 +50,7 @@ void LocationConfig::resetToDefault()
 	this->cgiParams.clear();
 	this->errorPages.clear();
 	this->redirection = std::make_pair("","");
+	this->regexValue.clear();
 }
 void LocationConfig::setUri(std::vector<std::string> vector)
 {
@@ -78,6 +79,23 @@ void LocationConfig::setUri(std::vector<std::string> vector)
 		return ;
 	}
 	uri = vector[idx];
+	if (modifier[0] == '~')
+	{
+		size_t start = 0;
+		size_t end = uri.size();
+		if (uri.find('^') == 0)
+			start++;
+		if (uri.find_last_of('$') == (uri.size() - 1))
+			end--;
+		regexValue.append(uri.substr(start, end));
+		size_t i = 0;
+		while ((i = regexValue.find_first_of('\\', i)) != std::string::npos)
+		{
+			regexValue.erase(regexValue.begin() + i);
+			i++;
+		}
+		std::cout << "REGEX: " << regexValue << std::endl;
+	}
 }
 void LocationConfig::setRoot(std::vector<std::string> vector)
 {
@@ -234,5 +252,10 @@ bool	LocationConfig::isMethodAllowed(std::string method)
 	if (allowedMethods.find(method) != allowedMethods.end())
 		return (true);
 	return (false);
+}
+
+std::string LocationConfig::getRegexValue()
+{
+	return(this->regexValue);
 }
 

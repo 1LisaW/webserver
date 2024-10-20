@@ -31,6 +31,7 @@ public:
     std::string get_protocol_v();
     enum eRequestType getRequestType();
     void setRequestType(enum eRequestType requestType);
+    void urlDecode(std::string &url);
 };
 
 // const std::set<std::string> HTTPRequest::METHODS = {"GET", "POST", "DELETE"};

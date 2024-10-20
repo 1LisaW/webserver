@@ -13,6 +13,7 @@
 class LocationConfig : public Attribute
 {
 private:
+	std::string regexValue;
 	void setRoot(std::vector<std::string> vector);
 	void setIndex(std::vector<std::string> vector);
 	void setAutoIndex(std::vector<std::string> vector);
@@ -49,6 +50,7 @@ public:
 	void fillAttributes(std::vector<std::string> confLineVector, Dictionary &dictionary);
 	bool isValid();
 	bool isMethodAllowed(std::string);
+	std::string getRegexValue();
 };
 
 #endif

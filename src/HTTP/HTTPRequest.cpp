@@ -119,3 +119,37 @@ void HTTPRequest::setRequestType(enum eRequestType requestType)
     _requestType = requestType;
 };
 
+void HTTPRequest::urlDecode(std::string &encodedString)
+{
+    std::string hexChars = "0123456789ABCDEFabcdef";
+    std::string decodedChar ="";
+    size_t posToDecode = encodedString.find_first_of('%', 0);
+    while (
+        (posToDecode !=std::string::npos)
+        &&(posToDecode + 2 < encodedString.size())
+        )
+    {
+        decodedChar.clear();
+        if (
+            (hexChars.find(encodedString[posToDecode + 1]) !=std::string::npos) && (hexChars.find(encodedString[posToDecode + 2]) != std::string::npos)
+            )
+        {
+           int hexParts[2];
+           hexParts[0] = hexChars.find(encodedString[posToDecode + 1]);
+           hexParts[1] = hexChars.find(encodedString[posToDecode + 2]);
+           for (int i = 0; i < 2; i++)
+           {
+               if (hexParts[i] / 16)
+                hexParts[i] -= 6;
+           }
+           decodedChar.insert(decodedChar.begin(), (unsigned char)(hexParts[0] * 16 + hexParts[1]));
+           std::cout  << decodedChar << std::endl;
+           encodedString.replace(encodedString.begin() + posToDecode, encodedString.begin() + posToDecode + 3, decodedChar);
+           posToDecode++;
+        }
+        else
+            posToDecode += 3;
+        posToDecode = encodedString.find_first_of('%', posToDecode);
+    }
+}
+

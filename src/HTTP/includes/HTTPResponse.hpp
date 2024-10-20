@@ -25,6 +25,7 @@ public:
 	void	get();
 	std::string getDefaultErrorPageContent(enum status_code_value statusCode);
 	std::string getDirectoryListing(std::string filePath);
+	void urlEncode(std::string &url);
 };
 
 #endif

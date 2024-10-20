@@ -27,7 +27,8 @@ void ServerConfig::resetToDefault()
 	this->locations.clear();
 	this->errorPages.clear();
 	this->redirection = std::make_pair("","");
-	this->supportedCgiExtentions.clear();
+	// this->supportedCgiExtentions.clear();
+	this->regexLocations.clear();
 }
 
 void ServerConfig::setListen(std::vector<std::string> vector)
@@ -106,11 +107,46 @@ bool ServerConfig::isValid()
 	return (true);
 }
 
+LocationConfig *ServerConfig::getRegexLocation(std::string path)
+{
+	LocationConfig *currRegexLocation = NULL;
+	for (std::vector<LocationConfig>::iterator it = this->regexLocations.begin(); it != this->regexLocations.end(); it++)
+	{
+		std::string regexVal = it->getRegexValue();
+		if (path.find(regexVal) == std::string::npos)
+			continue;
+		size_t pos = path.find_last_of(regexVal);
+		if (pos == std::string::npos)
+			continue;
+		std::cout << "1.________________regexVal is in uri " << regexVal << std::endl;
+		std::string uri = (it)->uri;
+		std::cout << "URI: " << uri  << " path: " << path <<  std::endl;
+
+		if (uri[0] == '^' && !pos)
+			continue;
+		std::cout << "2.________________regexVal match start " << regexVal << std::endl;
+		std::cout << "2.1.________________ " << pos << " " << pos + regexVal.size() << " " << path.size() << std::endl;
+
+		if (uri[uri.size() - 1] == '$' && (pos + 1 != path.size()))
+			continue;
+		std::cout << "3.________________regexVal match end " << regexVal << std::endl;
+
+		std::cout << "________________regexVal " << regexVal << std::endl;
+		return (&(*it));
+	}
+	return (currRegexLocation);
+}
+
+
 LocationConfig *ServerConfig::getLocation(std::string path)
 {
+	LocationConfig *currLocation = NULL;
+
+	currLocation = getRegexLocation(path);
+	if (currLocation)
+		return (currLocation);
 	std::string filePath = path;
 	std::vector<std::string> pathVector;
-	LocationConfig *currLocation = NULL;
 	pathVector.clear();
 	while(!filePath.empty())
 	{
@@ -145,6 +181,31 @@ LocationConfig *ServerConfig::getLocation(std::string path)
 	return (currLocation);
 }
 
+LocationConfig *ServerConfig::getSameLocation(std::string path)
+{
+	std::vector<LocationConfig>::iterator it = locations.begin();
+	while(it != locations.end())
+	{
+		if (!it->uri.compare(path))
+			return (&(*it));
+		it++;
+	}
+	return (NULL);
+}
+
+LocationConfig *ServerConfig::getSameRegexLocation(std::string path)
+{
+	std::vector<LocationConfig>::iterator it = regexLocations.begin();
+	while(it != regexLocations.end())
+	{
+		if (!it->uri.compare(path))
+			return (&(*it));
+		it++;
+	}
+	return (NULL);
+}
+
+
 std::set<std::string> ServerConfig::getServerNameAliases()
 {
 	return (this->serverNameAliases);
@@ -156,17 +217,29 @@ std::set<std::string> ServerConfig::getListenPorts()
 
 void ServerConfig::addLocation(LocationConfig location)
 {
-	LocationConfig *sameLocation = this->getLocation(location.uri);
+	if (!location.modifier.compare("~"))
+	{
+		LocationConfig *sameRegexLocation = this->getSameRegexLocation(location.uri);
+		if (sameRegexLocation)
+			sameRegexLocation = &location;
+		else
+			regexLocations.push_back(location);
+		return ;
+	}
+	LocationConfig *sameLocation = this->getSameLocation(location.uri);
 	if (sameLocation)
 		sameLocation = &location;
 	else
 		this->locations.push_back(location);
-	if (!location.isCgi)
-		return ;
-	std::string cgiExtention = location.uri;
-	cgiExtention.erase(0, cgiExtention.find_first_of('.'));
-	cgiExtention.erase(cgiExtention.find_first_of('$'));
-	supportedCgiExtentions[cgiExtention] = location.uri;
+	// if (!location.isCgi)
+	// 	return ;
+	// std::string cgiExtention = location.uri;
+	// cgiExtention.erase(0, cgiExtention.find_first_of('.'));
+	// cgiExtention.erase(cgiExtention.find_first_of('$'));
+	// supportedCgiExtentions[cgiExtention] = location.uri;
+	// add regex location
+	// if (!location.modifier.compare("~"))
+
 }
 
 std::string ServerConfig::getCgiExtentionFromUri(std::string uri)
