@@ -51,6 +51,7 @@ public:
 	bool isValid();
 	bool isMethodAllowed(std::string);
 	std::string getRegexValue();
+	std::string getCgiExtentionFromUri(std::string uri);
 };
 
 #endif

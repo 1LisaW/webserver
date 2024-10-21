@@ -47,6 +47,8 @@ class Dictionary
 		std::string getConfigVariable(std::string alias);
 		bool	isAttributeInServerDictionary(std::string attributeName);
 		bool	isAttributeInLocationDictionary(std::string attributeName);
+		std::string getSupportedCGIExtension(std::string ext);
+		std::string getSupportedCGIExecutor(std::string ext);
 };
 
 

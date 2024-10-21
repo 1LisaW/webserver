@@ -1,10 +1,21 @@
 #include "includes/HTTPResponse.hpp"
 
-HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _request(request)
+HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath) : _request(request)
 {
+	clientFd = clFd;
+	response.clear();
+		std::cout << "HTTPResponse::HTTPResponse" << std::endl;
+	if (_request.location->isCgi)
+	{
+		std::cout << "Problem is here" << std::endl;
+		runCGI(_request.location, &_request);
+		return ;
+	}
+	// if ()
 	status_code = _request.get_status_code();
 	if (!status_code)
 		status_code = ok;
+	std::cout << "PROTOCOL " << _request.get_protocol_v() << std::endl;
 	status_line.append(_request.get_protocol_v());
 	status_line.append(" ");
 	std::ostringstream stat_code_str;
@@ -13,6 +24,7 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 	status_line.append(" ");
 	status_line.append(getStatusCodeMsg(status_code));
 	status_line.append("\r\n");
+	std::cout << "status_line "<< status_line << std::endl;
 	response.append(status_line);
 
 	if (_request.getRequestType() == REDIRECT_REQUEST)
@@ -22,6 +34,8 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 		response_headers.append("\r\n");
 		response_headers.append("Content-Type: text/plain; charset=utf-8\r\n");
 		response.append(response_headers);
+		std::cout << "RESPONSE REDIRECT_REQUEST " << response << "|" << std::endl;
+		sendResponse();
 		return ;
 	}
 
@@ -56,7 +70,12 @@ HTTPResponse::HTTPResponse(HTTPRequest &request, std::string filePath) : _reques
 	response.append("\r\n");
 	response.append(content);
 
-	// if (request.get_method().compare("GET"))
+	if (!request.get_method().compare("GET"))
+	{
+
+		sendResponse();
+
+	}
 	// 	get();
 }
 
@@ -174,4 +193,78 @@ void HTTPResponse::urlEncode(std::string &string)
         posToEncode+=3;
         posToEncode = string.find_first_not_of(allowedChars, posToEncode);
     }
+}
+
+void HTTPResponse::setRequestData(const char *buff)
+{
+	std::cout << "HTTPResponse::setRequestData " << buff << "|HTTPResponse::setRequestData" << std::endl;
+	if (_request.location && _request.location->isCgi)
+	{
+		std::string buffer = buff;
+		write(tubes[1], buffer.c_str(), buffer.size() + 1);
+		if (buffer.size() <= 0)
+        	close(tubes[1]);
+	}
+	else
+		sendResponse();
+}
+
+
+void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
+{
+	std::string filePath = request->get_path();
+	std::string ext = location->getCgiExtentionFromUri(filePath);
+	std::string supportedExt = request->dictionary.getSupportedCGIExtension(ext);
+	std::cout << "First get  filePath: " << filePath <<" ext: " << ext << " supportedExt " << supportedExt << std::endl;
+	if ((ext.empty() || ext.empty()) && !location->cgiIndex.empty() )
+	{
+		filePath.append("/");
+		filePath.append(location->cgiIndex);
+		ext = location->getCgiExtentionFromUri(location->cgiIndex);
+		supportedExt = request->dictionary.getSupportedCGIExtension(ext);
+		std::cout << "Second get filePath: " << filePath <<" ext: " << ext << " supportedExt " << supportedExt << std::endl;
+	}
+	if (supportedExt.empty())
+	{
+		std::cout << "Incorrect data in config for cgi" << std::endl;
+		return ;
+	}
+	// fd = open(//temporary file to record cgi result);
+	std::string script = request->dictionary.getSupportedCGIExecutor(supportedExt);
+	script.append(" ");
+	script.append(".");
+	script.append(filePath);
+	char * paramsList[4];
+	paramsList[0] = (char *)"/bin/bash";
+	paramsList[1] = (char *)"-c";
+	paramsList[2] =(char *)script.c_str();
+	std::cout << "SCRIPT " << script << std::endl;
+	// paramsList[2] =(char *)"ls";
+	paramsList[3] = NULL;
+	pid_t cgi_pid;
+	pipe(tubes);
+	std::cout << "RUNNING CGI" << std::endl;
+	if ((cgi_pid = fork())== 0) // child process
+	{
+		close(tubes[1]);
+		dup2(tubes[0], 0);
+		execve("/bin/bash", paramsList, NULL);
+	}
+	else
+	{
+		std::string buffer = request->getBuffer();
+		write(tubes[1], buffer.c_str(), buffer.size() + 1);
+		// dup2(tubes[1], 0);
+		// sleep(100);
+		if (buffer.size() <= 0)
+        	close(tubes[1]);
+	}
+}
+
+void HTTPResponse::sendResponse()
+{
+    // std::cout << "sendResponse " << response << "|sendResponse" << std::endl;
+	// send(clientFd , response.c_str(), response.size(),0);
+	_request.isFulfilled = true;
+	// close(clientFd);
 }

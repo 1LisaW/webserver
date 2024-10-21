@@ -35,7 +35,6 @@ public:
 	std::set<std::string> getServerNameAliases();
 	std::set<std::string> getListenPorts();
 	void addLocation(LocationConfig location);
-	std::string getCgiExtentionFromUri(std::string uri);
 
 	LocationConfig *getRegexLocation(std::string path);
 	LocationConfig *getLocation(std::string path);

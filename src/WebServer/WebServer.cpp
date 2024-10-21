@@ -149,36 +149,31 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 
 	std::string requestUri = request->get_path();
 
+		// get the location that matches uri of the request
+	request->location = serverConfig->getLocation(requestUri);
 	// check is it cgi
-	std::string cgiExtention = serverConfig->getCgiExtentionFromUri(requestUri);
-	if (!cgiExtention.empty())
-	{
-		request->setRequestType(CGI);
-		return (filePath);
-	}
-
-	// get the location that matches uri of the request
-	LocationConfig *location = serverConfig->getLocation(requestUri);
+	if (request->location->isCgi)
+		return (requestUri);
 
 	// redirection
-	filePath = getRedirectionPath(requestUri, location, request);
+	filePath = getRedirectionPath(requestUri, request->location, request);
 	if (request->getRequestType() == REDIRECT_REQUEST)
 		return (filePath);
 
 	// if there no location or method is not allowed set error status code
-	if (location == NULL)
+	if (request->location == NULL)
 		request->setStatusCode(not_found);
-	else if (!location->isMethodAllowed(request->get_method()))
+	else if (!request->location->isMethodAllowed(request->get_method()))
 		request->setStatusCode(method_not_allowed);
 	// get path of file
 	else
 	{
 		std::string restUriPath;
 
-		filePath.append(location->root);
+		filePath.append(request->location->root);
 
 		size_t requestPathSize = request->get_path().size();
-		size_t restUriSize = requestPathSize - location->uri.size();
+		size_t restUriSize = requestPathSize - request->location->uri.size();
 		if (restUriSize)
 		{
 			filePath.append("/");
@@ -188,7 +183,7 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 		filePath.append(restUriPath);
 
 		std::string fileExtention = getUriExtention(filePath);
-		if (location->autoindex && !fileExtention.size() && location->index.empty())
+		if (request->location->autoindex && !fileExtention.size() && request->location->index.empty())
 		{
 			if (request->getRequestType() == GET_FILE)
 				request->setRequestType(GET_DIR_LIST);
@@ -210,7 +205,7 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 		if (!fileExtention.size())
 		{
 			filePath.append("/");
-			filePath.append(location->index);
+			filePath.append(request->location->index);
 		}
 		std::string relativePath = ".";
 		relativePath.append(filePath);
@@ -227,7 +222,7 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 		else
 		{
 			filePath.clear();
-			filePath.append(getResponseErrorFilePath(location, request->get_status_code()));
+			filePath.append(getResponseErrorFilePath(request->location, request->get_status_code()));
 		}
 	}
 	return (filePath);
@@ -237,3 +232,4 @@ std::set<std::string> WebServer::getServerNameAliases()
 {
 	return (this->serverConfig->getServerNameAliases());
 };
+

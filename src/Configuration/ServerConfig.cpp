@@ -242,11 +242,3 @@ void ServerConfig::addLocation(LocationConfig location)
 
 }
 
-std::string ServerConfig::getCgiExtentionFromUri(std::string uri)
-{
-	size_t pos = uri.find_last_of('.');
-	if (pos == std::string::npos || uri.size() - pos < 3)
-		return ("");
-	size_t endPos = uri.substr(pos).find_first_not_of("abcdefghijklmnopqrstuvwxyz");
-	return (uri.substr(pos, endPos));
-}
