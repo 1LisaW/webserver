@@ -20,12 +20,13 @@ class HTTPResponse
 {
 private:
 	int clientFd;
+	// int fdForCGIIncome;
+	int tubes[2];
 	enum status_code_value status_code;
 	HTTPRequest &_request;
 	std::string status_line;
 	std::string response_headers;
 	std::string content;
-	int tubes[2];
 	void	_set_content(std::string filePath);
 	void sendResponse();
 public:
@@ -38,6 +39,8 @@ public:
 	void urlEncode(std::string &url);
 	void runCGI(LocationConfig *location, HTTPRequest *request);
 	void setRequestData(const char *buffer);
+	void getEnvVariables(char ***envp);
+	void clearEnvVariables(char ***envp);
 };
 
 #endif

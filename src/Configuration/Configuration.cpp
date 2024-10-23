@@ -354,7 +354,7 @@ void Configuration::start()
 			if (FD_ISSET(clientfd, &read_fds))
 			{
 				// Read client's request
-				char buffer[1024];
+				char buffer[1024] = "";
 				ssize_t bytesReceived = recv(clientfd, buffer, sizeof(buffer) - 1, 0);
 				if (bytesReceived == -1)
 				{
@@ -369,7 +369,7 @@ void Configuration::start()
 				}
 				while (bytesReceived > 0)
 				{
-					std::cout << "BUFFER: " << buffer << "|BUFFER eND" << std::endl;
+					//std::cout << "BUFFER: " << buffer << "|BUFFER eND" << std::endl;
 					clientRequest.fillRequestData(buffer);
 					if (clientRequest.response == NULL)
 					{
@@ -384,9 +384,11 @@ void Configuration::start()
 					}
 					bytesReceived = recv(clientfd, buffer, sizeof(buffer) - 1, 0);
 				}
+				clientRequest.isFulfilled = true;
 				clientRequest.fillRequestData("");
-				std::cout << "CLIENT RESPONSE " << clientRequest.response->response << "|" << std::endl;
-				send(clientfd , clientRequest.response->response.c_str(), clientRequest.response->response.size(),0);
+				// std::cout << "CLIENT RESPONSE " << clientRequest.response->response << "|" << std::endl;
+				if (!clientRequest.location->isCgi)
+					send(clientfd , clientRequest.response->response.c_str(), clientRequest.response->response.size(),0);
 
 				// std::cout << "-----------NEW REQUEST----------" <<std::endl;
 				// std::cout << buffer << std::endl;

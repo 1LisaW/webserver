@@ -2,6 +2,7 @@
 
 HTTPRequest::HTTPRequest(Dictionary &dict): dictionary(dict){
     buff.clear();
+    buff = "";
     _requestType = UNKNOWN_REQUEST_TYPE;
     status_code = uninitialized;
     isHeadersSet = false;
@@ -274,9 +275,14 @@ void HTTPRequest::_fillQueryParams()
     }
 }
 
+std::map<std::string, std::string> HTTPRequest::getQueryParams()
+{
+    return (this->queryParams);
+}
+
+
 void HTTPRequest::fillRequestData(char const * buffer)
 {
-    // if the request is not reading the buffer for the first time and the buffer should contain header data
     if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
     {
         fillRequestHeaders(buffer);
@@ -284,8 +290,12 @@ void HTTPRequest::fillRequestData(char const * buffer)
     // Header has been read, body data should be sent in response
     if (isHeadersSet)
     {
-        //TODO::pass buffer to response
+        // TODO::if needed to read body
+        buff.append(buffer);
+        // std::cout << "1.0. HTTP REQUEST BUFF BEFORE RESPONSE: |" << buffer << "|" <<std::endl;
+        // std::cout << "1.1. HTTP REQUEST SEND BUFF TO RESPONSE: |" << buff << "|" <<std::endl;
         response->setRequestData(buff.c_str());
+        buff.clear();
         return ;
     }
     // Waiting for the next chunk of header data
@@ -324,7 +334,6 @@ void HTTPRequest::fillRequestData(char const * buffer)
     this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
     buff.erase(0, this->protocol_v.length() + 1);
 
-	std::cout << "PROTOCOL " << protocol_v << "|"<< std::endl;
     if (this->protocol_v.compare("HTTP/1.1"))
     {
         this->status_code = bad_request;
