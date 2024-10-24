@@ -34,7 +34,7 @@ HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
     if (!dictionary.isMethodInDictionary(method))
     {
         this->status_code = bad_request;
-        std::cout << "NOT FOUND! " << std::endl;
+        std::cout << "NOT FOUND! " << method << std::endl;
     }
     // std::cout << "Method is " << method << std::endl;
     {
@@ -283,6 +283,10 @@ std::map<std::string, std::string> HTTPRequest::getQueryParams()
 
 void HTTPRequest::fillRequestData(char const * buffer)
 {
+    std::cout << "<< FILL REQUEST DATA " << std::endl;
+    std::cout << buffer << std::endl;
+    std::cout << ">> FILL REQUEST DATA " << std::endl;
+
     if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
     {
         fillRequestHeaders(buffer);
@@ -317,7 +321,7 @@ void HTTPRequest::fillRequestData(char const * buffer)
     if (!dictionary.isMethodInDictionary(method))
     {
         this->status_code = bad_request;
-        std::cout << "NOT FOUND! " << std::endl;
+        std::cout << "NOT FOUND! - " << method << std::endl;
     }
     if (!method.compare("GET"))
         _requestType = GET_FILE;

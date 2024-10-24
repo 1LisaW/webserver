@@ -369,7 +369,7 @@ void Configuration::start()
 				}
 				while (bytesReceived > 0)
 				{
-					//std::cout << "BUFFER: " << buffer << "|BUFFER eND" << std::endl;
+					std::cout << "BUFFER: " << buffer << "|BUFFER eND" << std::endl;
 					clientRequest.fillRequestData(buffer);
 					if (clientRequest.response == NULL)
 					{
@@ -387,7 +387,7 @@ void Configuration::start()
 				clientRequest.isFulfilled = true;
 				clientRequest.fillRequestData("");
 				// std::cout << "CLIENT RESPONSE " << clientRequest.response->response << "|" << std::endl;
-				if (!clientRequest.location->isCgi)
+				// if (!clientRequest.location->isCgi)
 					send(clientfd , clientRequest.response->response.c_str(), clientRequest.response->response.size(),0);
 
 				// std::cout << "-----------NEW REQUEST----------" <<std::endl;

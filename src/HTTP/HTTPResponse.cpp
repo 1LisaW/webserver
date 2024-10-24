@@ -3,6 +3,7 @@
 HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath) : _request(request)
 {
 	clientFd = clFd;
+	cgiResponseFd = 0;
 	// fdForCGIIncome = dup(0);
 	response.clear();
 		std::cout << "HTTPResponse::HTTPResponse" << std::endl;
@@ -206,7 +207,41 @@ void HTTPResponse::setRequestData(const char *buff)
 		write(tubes[1], buffer.c_str(), buffer.size() + 1);
 		if (buffer.size() <= 0)
 		{
+			response.clear();
+			// read status from cgi
+			std::string s;
+			char ch;
+			while (read(cgiResponseFd, &ch, 1) > 0 && ch && ch != '\n')
+			{
+				s.push_back(ch);
+			}
+			std::cout << "First string: " << s << std::endl;
+			if(!s.compare("Status: OK\r"))
+			{
+
+				response.append(_request.get_protocol_v());
+				response.append(" 200 OK\r\n");
+			}
+			s.clear();
 			// std::cout << "FD CLOSED " << std::endl;
+			// std::string s;
+        // char ch;
+		// wait(NULL);
+			while (read(cgiResponseFd, &ch, 1) > 0)
+			{
+				// if (ch != 0)
+					response.push_back(ch);
+				// else
+				// {
+					// std::cout << s << '\n';
+					// response.clear();
+				// }
+			}
+			close(cgiResponseFd);
+		std::cout << "<<<< CGI RESPONSE: " << std::endl;
+		std::cout << response << std::endl;
+		std::cout << ">>>> /CGI RESPONSE: " << std::endl;
+
         	close(tubes[1]);
 		}
 	}
@@ -223,6 +258,7 @@ void HTTPResponse::getEnvVariables(char ***envp)
 	if (_request.headers.find("Content-Type") != _request.headers.end())
 		env["CONTENT_TYPE"] = _request.headers["Content-Type"];
 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	env["SERVER_PROTOCOL"] = _request.get_protocol_v();
 	//TODO:take from cgi params and request query params
 	env["PATH_INFO"] = "index.php";
 	env["QUERY_STRING"] = "";
@@ -307,6 +343,10 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 	paramsList[3] = NULL;
 	pid_t cgi_pid;
 	pipe(tubes);
+	int cgiResponseFds[2];
+	pipe(cgiResponseFds);
+	cgiResponseFd = cgiResponseFds[0];
+
 	std::cout << "RUNNING CGI " << script << std::endl;
 	char ***envp = NULL;
 	envp = new char **[1];
@@ -317,12 +357,14 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 		dup2(tubes[0], STDIN_FILENO);
 		close(tubes[0]);
 		close(tubes[1]);
-
+		close(cgiResponseFds[0]);
+		dup2(cgiResponseFds[1], STDOUT_FILENO);
+		close(cgiResponseFds[1]);
 		// dup2 (tubes[1], STDOUT_FILENO);
 		// close(tubes[1]);
 		// dup2(fdForCGIIncome, STDIN_FILENO);
 		// close(fdForCGIIncome);
-		std::cout << "FD CLOSED ON CHILD " << "envp: " << (*envp)[0] << std::endl;
+		// std::cout << "FD CLOSED ON CHILD " << "envp: " << (*envp)[0] << std::endl;
 		execve("/bin/bash", paramsList, *envp);
 	}
 	else
@@ -334,10 +376,18 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 		write(tubes[1], buffer.c_str(), buffer.size() + 1);
 
 			close(tubes[0]);
+        	close(cgiResponseFds[1]);
 			// close(tubes[1]);
 		if (buffer.size() <= 0)
 		{
 			close(tubes[1]);
+
+
+        // finished with read-side
+        //close(cgiResponseFds[0]);
+		// std::cout << "<<<< CGI RESPONSE: " << std::endl;
+		// std::cout << s << std::endl;
+		// std::cout << ">>>> /CGI RESPONSE: " << std::endl;
 
         	// close(fdForCGIIncome);
 			std::cout << "CGI WRITE STOPED" << std::endl;

@@ -22,6 +22,7 @@ private:
 	int clientFd;
 	// int fdForCGIIncome;
 	int tubes[2];
+	int cgiResponseFd;
 	enum status_code_value status_code;
 	HTTPRequest &_request;
 	std::string status_line;
