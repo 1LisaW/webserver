@@ -16,6 +16,9 @@ private:
     enum status_code_value status_code;
     std::string buff;
     std::string body;
+    std::string boundary;
+    std::string lastBuff;
+    std::string bodyLimiter;
     std::string method;
     std::string path;
     std::map<std::string, std::string> queryParams;
@@ -26,6 +29,7 @@ private:
 public:
     bool isFulfilled;
     bool isHeadersSet;
+    size_t bodyToRead;
     HTTPResponse *response;
     Dictionary &dictionary;
     LocationConfig *location;

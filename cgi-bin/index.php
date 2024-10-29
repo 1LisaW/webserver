@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_end_flush();
 
   } else {
+    print_r($_FILES['filename']['error']);
     http_response_code(404);
     header($_SERVER["SERVER_PROTOCOL"] . "404 Not Found");
     ob_start();
@@ -76,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   print_r($_GET);
   print_r($_POST);
   print_r($_FILES);
+  print_r($_FILES['filename']['error']);
 } else {
   echo "No POST data received.";
 }

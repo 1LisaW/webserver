@@ -377,9 +377,14 @@ void Configuration::start()
 						/* connection.                                */
 						/**********************************************/
 						memset(buffer, 0, 1024);
+						std::cout << "RECIVING....." << i << std::endl;
 						rc = recv(i, buffer, sizeof(buffer) - 1, 0);
+						
+
 						if ( rc > 0 )
 							buffer[rc] = '\0';
+						std::cout << buffer << std::endl;
+						std::cout << ".....RECIVING....." << rc << std::endl;
 						if (rc < 0)
 						{
 							clientRequest->isFulfilled = true;
@@ -425,6 +430,14 @@ void Configuration::start()
 						}
 						if (clientRequest->isHeadersSet && clientRequest->getBuffer().size())
 								clientRequest->fillRequestData("");
+						if (clientRequest->bodyToRead)
+						{
+							if (rc > (ssize_t)clientRequest->bodyToRead)
+								clientRequest->bodyToRead = 0;
+							else
+								clientRequest->bodyToRead -= rc;
+						}
+						std::cout << " ~~~~~~~~~~BODY TO READ " << clientRequest->bodyToRead << std::endl;
 						if (clientRequest && clientRequest->response && clientRequest->response->isFulfilled)
 						{
 							std::cout << "SEND" << std::endl;

@@ -2,6 +2,9 @@
 
 HTTPRequest::HTTPRequest(int clFd, Dictionary &dict): dictionary(dict){
     clientFd = clFd;
+    bodyToRead = 0;
+    bodyLimiter.clear();
+    boundary.clear();
     buff.clear();
     body.clear();
     buff = "";
@@ -116,7 +119,27 @@ HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
         key.append(header.substr(0, colon_pos));
         header.erase(0, key.length() + 1);
         header.erase(0, header.find_first_not_of(" "));
+        std::cout << "Key: " << key << std::endl;
         headers.insert(std::pair<std::string, std::string>(key, header));
+        if (!key.compare("Content-Length"))
+        {
+            std::stringstream sstream(header);
+            size_t result;
+            sstream >> result;
+            bodyToRead = result;
+            std::cout << ">>>>>>>>>>>>>>>>>>>Content-Length: " << bodyToRead<< std::endl;
+        }
+        if (!key.compare("Content-Type"))
+        {
+            std::string bounadyTitle = "boundary=";
+            size_t boudatyStart = header.find(bounadyTitle);
+            if (boudatyStart < header.size())
+            {
+                bodyLimiter.append(header.substr(boudatyStart + bounadyTitle.size()));
+                bodyLimiter.append("--\r\n\r\n");
+            }
+            std::cout << ">>>>>>>>>>>>>>>>>>>Content-Type: " << bodyLimiter<< std::endl;
+        }
     }
     buff.erase(0, buff.find_first_not_of("\r\n"));
     //  chack on header "Host"
@@ -232,6 +255,27 @@ void HTTPRequest::fillRequestHeaders(char const * buffer)
         header.erase(0, key.length() + 1);
         header.erase(0, header.find_first_not_of(" "));
         headers.insert(std::pair<std::string, std::string>(key, header));
+        headers.insert(std::pair<std::string, std::string>(key, header));
+        if (!key.compare("Content-Length"))
+        {
+            std::stringstream sstream(header);
+            size_t result;
+            sstream >> result;
+            bodyToRead = result;
+            std::cout << ">>>>>>>>>>>>>>>>>>>Content-Length: " << bodyToRead<< std::endl;
+        }
+        if (!key.compare("Content-Type"))
+        {
+            std::string bounadyTitle = "boundary=";
+            size_t boudatyStart = header.find(bounadyTitle);
+            if (boudatyStart < header.size())
+            {
+                boundary = header.substr(boudatyStart + bounadyTitle.size());
+                bodyLimiter.append(boundary);
+                bodyLimiter.append("--\r\n\r\n");
+            }
+            std::cout << ">>>>>>>>>>>>>>>>>>>Content-Type: " << bodyLimiter<< std::endl;
+        }
     }
     buff.erase(0, buff.find_first_not_of("\r\n"));
     isHeadersSet = true;
@@ -290,17 +334,18 @@ void HTTPRequest::fillRequestData(char const * buffer)
     // std::cout << "<< FILL REQUEST DATA " << std::endl;
     // std::cout << buffer << std::endl;
     // std::cout << ">> FILL REQUEST DATA " << std::endl;
-    std::string tmp;
-    tmp.append(buffer);
-    std::size_t key_index = tmp.find("\r\n\r\n");
+  
+    // std::string tmp;
+    // tmp.append(buffer);
+    // std::size_t key_index = tmp.find("\r\n\r\n");
     // bool endFile = (key_index != tmp.npos);
     // std::cout << "Do we have \r\n\r\n :" << (endFile == std::string::npos) << " " << (endFile != std::string::npos) << std::endl;
-    if (key_index < tmp.size() && isHeadersSet)
-    {
-        std::cout << "SET fulfield" << tmp.find("\r\n\r\n") << " " << std::string::npos << std::endl;
-        isFulfilled = true;
-    }
-    tmp.clear();
+    // if (key_index < tmp.size() && isHeadersSet)
+    // {
+    //     std::cout << "SET fulfield" << tmp.find("\r\n\r\n") << " " << std::string::npos << std::endl;
+    //     isFulfilled = true;
+    // }
+    // tmp.clear();
     // Header has been read, body data should be sent in response
     // if (response && !(*buffer) && buff.size() == 0)
     //     close(response->tubes[1]);
@@ -310,6 +355,22 @@ void HTTPRequest::fillRequestData(char const * buffer)
         // if (buff.size())
             // buff.resize(buff.size()-1);
         buff.append(buffer);
+        if (buff.size() > bodyLimiter.size())
+        {
+            lastBuff.clear();
+        }
+        lastBuff.append(buff);
+        // if (bodyToRead > 0)
+        // {
+        //     bodyToRead -= buff.size();
+        //     std::cout << "~~~~~~~~~BODY TO READ: " << bodyToRead << std::endl;
+        // }
+        if (bodyToRead <= 0 || (bodyToRead > 0 && lastBuff.find(bodyLimiter) < buff.size()))
+        {
+            isFulfilled = true;
+            std::cout << "SET fulfield" << std::endl;
+        }
+
         // if (buff.size())
         response->setRequestData(buff.c_str());
         // response->setRequestData(buffer);

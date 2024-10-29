@@ -29,8 +29,8 @@ private:
 	std::string content;
 	void	_set_content(std::string filePath);
 	void sendResponse();
-	char *paramsCGIList[4];
-	char ***envp;
+	// char *paramsCGIList[4];
+	// char ***envp;
 	int cgiResponseFds[2];
 	std::string scriptExec;
 public:

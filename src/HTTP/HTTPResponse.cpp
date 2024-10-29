@@ -207,7 +207,7 @@ void HTTPResponse::setRequestData(const char *buff)
 		std::cout << "<< SET REQUEST DATA " << _request.isFulfilled<<  std::endl;
 		std::cout << buff << std::endl;
 		std::cout << ">> SET REQUEST DATA " << std::endl;
-		std::cout << "setRequestData" << std::endl;
+		// std::cout << "setRequestData" << std::endl;
 		if (buffer.size())
 			write(tubes[1], buffer.c_str(), buffer.size() - 1);
 		if (_request.isFulfilled)
