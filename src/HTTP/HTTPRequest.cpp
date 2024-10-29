@@ -1,8 +1,11 @@
 #include "includes/HTTPRequest.hpp"
 
-HTTPRequest::HTTPRequest(Dictionary &dict): dictionary(dict){
+HTTPRequest::HTTPRequest(int clFd, Dictionary &dict): dictionary(dict){
+    clientFd = clFd;
     buff.clear();
+    body.clear();
     buff = "";
+    body = "";
     _requestType = UNKNOWN_REQUEST_TYPE;
     status_code = uninitialized;
     isHeadersSet = false;
@@ -232,6 +235,7 @@ void HTTPRequest::fillRequestHeaders(char const * buffer)
     }
     buff.erase(0, buff.find_first_not_of("\r\n"));
     isHeadersSet = true;
+    // this->isFulfilled = true;
     //  chack on header "Host"
     if (headers.find("Host") == headers.end())
     {
@@ -283,28 +287,48 @@ std::map<std::string, std::string> HTTPRequest::getQueryParams()
 
 void HTTPRequest::fillRequestData(char const * buffer)
 {
-    std::cout << "<< FILL REQUEST DATA " << std::endl;
-    std::cout << buffer << std::endl;
-    std::cout << ">> FILL REQUEST DATA " << std::endl;
-
-    if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
+    // std::cout << "<< FILL REQUEST DATA " << std::endl;
+    // std::cout << buffer << std::endl;
+    // std::cout << ">> FILL REQUEST DATA " << std::endl;
+    std::string tmp;
+    tmp.append(buffer);
+    std::size_t key_index = tmp.find("\r\n\r\n");
+    // bool endFile = (key_index != tmp.npos);
+    // std::cout << "Do we have \r\n\r\n :" << (endFile == std::string::npos) << " " << (endFile != std::string::npos) << std::endl;
+    if (key_index < tmp.size() && isHeadersSet)
     {
-        fillRequestHeaders(buffer);
+        std::cout << "SET fulfield" << tmp.find("\r\n\r\n") << " " << std::string::npos << std::endl;
+        isFulfilled = true;
     }
+    tmp.clear();
     // Header has been read, body data should be sent in response
+    // if (response && !(*buffer) && buff.size() == 0)
+    //     close(response->tubes[1]);
     if (isHeadersSet)
     {
         // TODO::if needed to read body
+        // if (buff.size())
+            // buff.resize(buff.size()-1);
         buff.append(buffer);
-        // std::cout << "1.0. HTTP REQUEST BUFF BEFORE RESPONSE: |" << buffer << "|" <<std::endl;
-        // std::cout << "1.1. HTTP REQUEST SEND BUFF TO RESPONSE: |" << buff << "|" <<std::endl;
+        // if (buff.size())
         response->setRequestData(buff.c_str());
+        // response->setRequestData(buffer);
+        // buff.append(buffer);
+        // if (isFulfilled)
+        // {
+        // response->setRequestData(buff.c_str());
         buff.clear();
+        // }
         return ;
     }
     // Waiting for the next chunk of header data
     else if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
         return ;
+    if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
+    {
+        fillRequestHeaders(buffer);
+    }
+
 
     // if request reads the buffer for the first time
     buff.append(buffer);
@@ -350,4 +374,6 @@ void HTTPRequest::fillRequestData(char const * buffer)
     buff.erase(0, buff.find_first_not_of("\r\n"));
     _fillQueryParams();
     fillRequestHeaders("");
+    // std::cout << "<><>BUFF: " << buff << std::endl;
+    // std::cout << "><><>BUFF: " << std::endl;
 }
