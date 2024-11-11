@@ -1,13 +1,18 @@
 <?php
-$config = parse_ini_file("config.ini");
-// print('PHP SCRIPT');
+$config = parse_ini_file(".user.ini");
+print('~~~~~~~~PHP SCRIPT');
+// ini_set('upload_max_filesize', '10M');
+// $upload_max_filesize = $config['upload_max_filesize'];
+// putenv("INI_PERDIR=$upload_max_filesize");
+// print "env is: ".."\n";
+phpinfo();
 
 // print($config['database']);
 // print('--------------------------------------PHP SCRIPT---------------------');
 
 // $f = fopen( 'php://stdin', 'r' );
 // while( $line = fgets( $f ) ) {
-//   echo $line;
+// //   echo $line;
 // }
 // print('+++++++++++++++++++PHP SCRIPT++++++++++++++++++++++++');
 
@@ -77,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   print_r($_GET);
   print_r($_POST);
   print_r($_FILES);
+  print_r($_ENV);
   print_r($_FILES['filename']['error']);
 } else {
   echo "No POST data received.";

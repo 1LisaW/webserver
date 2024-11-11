@@ -5,6 +5,7 @@ HTTPRequest::HTTPRequest(int clFd, Dictionary &dict): dictionary(dict){
     bodyToRead = 0;
     bodyLimiter.clear();
     boundary.clear();
+    lastBuff.clear();
     buff.clear();
     body.clear();
     buff = "";
@@ -21,138 +22,139 @@ HTTPRequest &HTTPRequest::operator=(HTTPRequest &rhs)
     return (*this);
 }
 
-HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
-{
-    _requestType = UNKNOWN_REQUEST_TYPE;
-    status_code = uninitialized;
-    // 1. Parse first string from request
-    buff.append(buffer);
-    if (!buff.size())
-    {
-        this->status_code = bad_request;
-        std::cout << "Empty request" << std::endl;
-        return ;
-    }
-    //  set method
-    this->method.append(buff.substr(0, buff.find_first_of(' ')));
-    buff.erase(0, this->method.length());
-    buff.erase(0, buff.find_first_not_of(" "));
-    if (!dictionary.isMethodInDictionary(method))
-    {
-        this->status_code = bad_request;
-        std::cout << "NOT FOUND! " << method << std::endl;
-    }
-    // std::cout << "Method is " << method << std::endl;
-    {
-        if (!method.compare("GET"))
-            _requestType = GET_FILE;
-        else if (!method.compare("POST"))
-            _requestType = POST_DATA;
-        else if (!method.compare("DELETE"))
-            _requestType = DELETE_DATA;
-    }
-    //  set path
-    this->path.append(buff.substr(0, buff.find_first_of(' ')));
-    buff.erase(0, this->path.length());
-    buff.erase(0, buff.find_first_not_of(" "));
-    size_t queryParamsStartPos = this->path.find('?');
-    if (queryParamsStartPos != std::string::npos)
-    {
-        std::cout <<"QUERRY!!!!!!!" << std::endl;
-        std::string queryParamsStr = this->path.substr(queryParamsStartPos + 1);
-        this->path.erase(this->path.begin() + queryParamsStartPos, this->path.end());
-        // set parameters
-        while (!queryParamsStr.empty())
-        {
-            size_t equalSignPos = queryParamsStr.find_first_of('=');
-            size_t ampersandPos = queryParamsStr.find_first_of('&');
-            if ((equalSignPos == std::string::npos || equalSignPos == queryParamsStr.size() - 1)
-                || (ampersandPos != std::string::npos && ampersandPos < equalSignPos))
-            {
-                //TODO:: check err code for query params
-                this->status_code = bad_request;
-                break;
-            }
-            // if ()
-            std::string first = queryParamsStr.substr(0, equalSignPos);
-            size_t endOfSecondPos = queryParamsStr.size();
-            if (ampersandPos != std::string::npos)
-                endOfSecondPos = ampersandPos;
-            std::string second = queryParamsStr.substr(equalSignPos + 1, endOfSecondPos);
-            queryParamsStr.erase(queryParamsStr.begin(), queryParamsStr.begin() + endOfSecondPos);
-            if (!queryParamsStr.empty() && queryParamsStr[0] == '&')
-                queryParamsStr.erase(queryParamsStr.begin(), queryParamsStr.begin() + 1);
-            queryParams[first] = second;
-        }
-    }
-    //  set protocol
-    std::cout << "REST OF BUFF "<< buff.substr(0, buff.find_first_of('\r')) << std::endl;
-    this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
-    buff.erase(0, this->protocol_v.length() + 1);
+// HTTPRequest::HTTPRequest(char const *buffer, Dictionary &dict): dictionary(dict)
+// {
+//     _requestType = UNKNOWN_REQUEST_TYPE;
+//     status_code = uninitialized;
+//     // 1. Parse first string from request
+//     buff.append(buffer);
+//     if (!buff.size())
+//     {
+//         this->status_code = bad_request;
+//         std::cout << "Empty request" << std::endl;
+//         return ;
+//     }
+//     //  set method
+//     this->method.append(buff.substr(0, buff.find_first_of(' ')));
+//     buff.erase(0, this->method.length());
+//     buff.erase(0, buff.find_first_not_of(" "));
+//     if (!dictionary.isMethodInDictionary(method))
+//     {
+//         this->status_code = bad_request;
+//         std::cout << "NOT FOUND! " << method << std::endl;
+//     }
+//     // std::cout << "Method is " << method << std::endl;
+//     {
+//         if (!method.compare("GET"))
+//             _requestType = GET_FILE;
+//         else if (!method.compare("POST"))
+//             _requestType = POST_DATA;
+//         else if (!method.compare("DELETE"))
+//             _requestType = DELETE_DATA;
+//     }
+//     //  set path
+//     this->path.append(buff.substr(0, buff.find_first_of(' ')));
+//     buff.erase(0, this->path.length());
+//     buff.erase(0, buff.find_first_not_of(" "));
+//     size_t queryParamsStartPos = this->path.find('?');
+//     if (queryParamsStartPos != std::string::npos)
+//     {
+//         std::cout <<"QUERRY!!!!!!!" << std::endl;
+//         std::string queryParamsStr = this->path.substr(queryParamsStartPos + 1);
+//         this->path.erase(this->path.begin() + queryParamsStartPos, this->path.end());
+//         // set parameters
+//         while (!queryParamsStr.empty())
+//         {
+//             size_t equalSignPos = queryParamsStr.find_first_of('=');
+//             size_t ampersandPos = queryParamsStr.find_first_of('&');
+//             if ((equalSignPos == std::string::npos || equalSignPos == queryParamsStr.size() - 1)
+//                 || (ampersandPos != std::string::npos && ampersandPos < equalSignPos))
+//             {
+//                 //TODO:: check err code for query params
+//                 this->status_code = bad_request;
+//                 break;
+//             }
+//             // if ()
+//             std::string first = queryParamsStr.substr(0, equalSignPos);
+//             size_t endOfSecondPos = queryParamsStr.size();
+//             if (ampersandPos != std::string::npos)
+//                 endOfSecondPos = ampersandPos;
+//             std::string second = queryParamsStr.substr(equalSignPos + 1, endOfSecondPos);
+//             queryParamsStr.erase(queryParamsStr.begin(), queryParamsStr.begin() + endOfSecondPos);
+//             if (!queryParamsStr.empty() && queryParamsStr[0] == '&')
+//                 queryParamsStr.erase(queryParamsStr.begin(), queryParamsStr.begin() + 1);
+//             queryParams[first] = second;
+//         }
+//     }
+//     //  set protocol
+//     std::cout << "REST OF BUFF "<< buff.substr(0, buff.find_first_of('\r')) << std::endl;
+//     this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
+//     buff.erase(0, this->protocol_v.length() + 1);
 
-    if (!this->protocol_v.compare("HTTP/1.1"))
-    {
-        this->status_code = bad_request;
-        std::cout << " BAD PROTOCOL |" << this->protocol_v << "|" << std::endl;
-        return ;
+//     if (!this->protocol_v.compare("HTTP/1.1"))
+//     {
+//         this->status_code = bad_request;
+//         std::cout << " BAD PROTOCOL |" << this->protocol_v << "|" << std::endl;
+//         return ;
 
-    }
-	std::cout << "PROTOCOL " << protocol_v << " " << get_protocol_v() << std::endl;
+//     }
+// 	std::cout << "PROTOCOL " << protocol_v << " " << get_protocol_v() << std::endl;
 
-    buff.erase(0, buff.find_first_not_of("\r\n"));
-    // 2. Parse block of headers from request
-    while (buff.find_first_of("\r\n"))
-    {
-        std::string header;
-        header.append(buff.substr(0, buff.find_first_of('\r')));
-        size_t colon_pos = header.find(':');
-        if (colon_pos == header.length())
-        {
-            this->status_code = bad_request;
-            std::cout << " Wrong header's format" << std::endl;
-            return ;
-        }
-        buff.erase(0, header.length() + 2);
+//     buff.erase(0, buff.find_first_not_of("\r\n"));
+//     // 2. Parse block of headers from request
+//     while (buff.find_first_of("\r\n"))
+//     {
+//         std::string header;
+//         header.append(buff.substr(0, buff.find_first_of('\r')));
+//         size_t colon_pos = header.find(':');
+//         if (colon_pos == header.length())
+//         {
+//             this->status_code = bad_request;
+//             std::cout << " Wrong header's format" << std::endl;
+//             return ;
+//         }
+//         buff.erase(0, header.length() + 2);
 
-        std::string key;
+//         std::string key;
 
-        key.append(header.substr(0, colon_pos));
-        header.erase(0, key.length() + 1);
-        header.erase(0, header.find_first_not_of(" "));
-        std::cout << "Key: " << key << std::endl;
-        headers.insert(std::pair<std::string, std::string>(key, header));
-        if (!key.compare("Content-Length"))
-        {
-            std::stringstream sstream(header);
-            size_t result;
-            sstream >> result;
-            bodyToRead = result;
-            std::cout << ">>>>>>>>>>>>>>>>>>>Content-Length: " << bodyToRead<< std::endl;
-        }
-        if (!key.compare("Content-Type"))
-        {
-            std::string bounadyTitle = "boundary=";
-            size_t boudatyStart = header.find(bounadyTitle);
-            if (boudatyStart < header.size())
-            {
-                bodyLimiter.append(header.substr(boudatyStart + bounadyTitle.size()));
-                bodyLimiter.append("--\r\n\r\n");
-            }
-            std::cout << ">>>>>>>>>>>>>>>>>>>Content-Type: " << bodyLimiter<< std::endl;
-        }
-    }
-    buff.erase(0, buff.find_first_not_of("\r\n"));
-    //  chack on header "Host"
-    if (headers.find("Host") == headers.end())
-    {
-         this->status_code = bad_request;
-            std::cout << " Wrong header's format: no info about host" << std::endl;
-            return ;
-    }
-    // TODO:: parse body
-    // std::cout << "Rest is |" << buff  << "|" << std::endl;
+//         key.append(header.substr(0, colon_pos));
+//         header.erase(0, key.length() + 1);
+//         header.erase(0, header.find_first_not_of(" "));
+//         std::cout << "Key: " << key << std::endl;
+//         headers.insert(std::pair<std::string, std::string>(key, header));
+//         if (!key.compare("Content-Length"))
+//         {
+//             std::stringstream sstream(header);
+//             size_t result;
+//             sstream >> result;
+//             bodyToRead = result;
+//             std::cout << ">>>>>>>>>>>>>>>>>>>Content-Length: " << bodyToRead<< std::endl;
+//         }
+//         if (!key.compare("Content-Type"))
+//         {
+//             std::string bounadyTitle = "boundary=";
+//             size_t boudatyStart = header.find(bounadyTitle);
+//             if (boudatyStart < header.size())
+//             {
+//                 bodyLimiter.append(header.substr(boudatyStart + bounadyTitle.size()));
+//                 bodyLimiter.append("--\r\n\r\n");
+//             }
+//             std::cout << ">>>>>>>>>>>>>>>>>>>Content-Type: " << bodyLimiter<< std::endl;
+//         }
+//     }
+//     buff.erase(0, buff.find_first_not_of("\r\n"));
+//     //  chack on header "Host"
+//     if (headers.find("Host") == headers.end())
+//     {
+//          this->status_code = bad_request;
+//             std::cout << " Wrong header's format: no info about host" << std::endl;
+//             return ;
+//     }
+//     // TODO:: parse body
+//     // std::cout << "Rest is |" << buff  << "|" << std::endl;
 
-}
+// }
+
 
 HTTPRequest::~HTTPRequest()
 {
@@ -329,71 +331,46 @@ std::map<std::string, std::string> HTTPRequest::getQueryParams()
 }
 
 
-void HTTPRequest::fillRequestData(char const * buffer)
+void HTTPRequest::fillRequestData(unsigned char const * _buffer, ssize_t rc)
 {
-    // std::cout << "<< FILL REQUEST DATA " << std::endl;
-    // std::cout << buffer << std::endl;
-    // std::cout << ">> FILL REQUEST DATA " << std::endl;
-  
-    // std::string tmp;
-    // tmp.append(buffer);
-    // std::size_t key_index = tmp.find("\r\n\r\n");
-    // bool endFile = (key_index != tmp.npos);
-    // std::cout << "Do we have \r\n\r\n :" << (endFile == std::string::npos) << " " << (endFile != std::string::npos) << std::endl;
-    // if (key_index < tmp.size() && isHeadersSet)
-    // {
-    //     std::cout << "SET fulfield" << tmp.find("\r\n\r\n") << " " << std::string::npos << std::endl;
-    //     isFulfilled = true;
-    // }
-    // tmp.clear();
-    // Header has been read, body data should be sent in response
-    // if (response && !(*buffer) && buff.size() == 0)
-    //     close(response->tubes[1]);
+    std::string buffer;
+    buffer.append((char*)(_buffer), rc);
+    std::cout << "STEP: fillRequestData " << "- isFulfield " << isFulfilled << " -bodyToRead " << bodyToRead <<std::endl;
     if (isHeadersSet)
     {
-        // TODO::if needed to read body
-        // if (buff.size())
-            // buff.resize(buff.size()-1);
-        buff.append(buffer);
+        buff.append(buffer.c_str(), buffer.size());
+        std::cout << "~~~~~~~~~LESSEN BODY SIZE on " << buff.size() << "\n" << "Body to read: " << bodyToRead << std::endl;
+        if (bodyToRead < buff.size())
+            bodyToRead = 0;
+        else
+            bodyToRead -= buff.size();
         if (buff.size() > bodyLimiter.size())
         {
             lastBuff.clear();
         }
-        lastBuff.append(buff);
-        // if (bodyToRead > 0)
-        // {
-        //     bodyToRead -= buff.size();
-        //     std::cout << "~~~~~~~~~BODY TO READ: " << bodyToRead << std::endl;
-        // }
-        if (bodyToRead <= 0 || (bodyToRead > 0 && lastBuff.find(bodyLimiter) < buff.size()))
+        lastBuff.append(buff.c_str(), buff.size());
+
+        if (bodyToRead <= 0 || (bodyToRead > 0 && lastBuff.find(bodyLimiter) < lastBuff.size()))
         {
+
             isFulfilled = true;
             std::cout << "SET fulfield" << std::endl;
         }
 
-        // if (buff.size())
-        response->setRequestData(buff.c_str());
-        // response->setRequestData(buffer);
-        // buff.append(buffer);
-        // if (isFulfilled)
-        // {
-        // response->setRequestData(buff.c_str());
+        response->setRequestData(buff.c_str(), buff.size());
         buff.clear();
-        // }
         return ;
     }
     // Waiting for the next chunk of header data
-    else if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
-        return ;
-    if (_requestType != UNKNOWN_REQUEST_TYPE && !isHeadersSet)
+    else if (_requestType != UNKNOWN_REQUEST_TYPE)
     {
-        fillRequestHeaders(buffer);
+        fillRequestHeaders(buffer.c_str());
+        return ;
     }
 
-
     // if request reads the buffer for the first time
-    buff.append(buffer);
-    if (!buff.size())
+    buff.append(buffer.c_str(), rc);
+    if (rc <= 0)
     {
         this->status_code = bad_request;
         std::cout << "Empty request" << std::endl;
@@ -419,7 +396,6 @@ void HTTPRequest::fillRequestData(char const * buffer)
     buff.erase(0, this->path.length());
     buff.erase(0, buff.find_first_not_of(" "));
      //  set protocol
-    // std::cout << "REST OF BUFF "<< buff.substr(0, buff.find_first_of('\r')) << std::endl;
     this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
     buff.erase(0, this->protocol_v.length() + 1);
 
@@ -435,6 +411,4 @@ void HTTPRequest::fillRequestData(char const * buffer)
     buff.erase(0, buff.find_first_not_of("\r\n"));
     _fillQueryParams();
     fillRequestHeaders("");
-    // std::cout << "<><>BUFF: " << buff << std::endl;
-    // std::cout << "><><>BUFF: " << std::endl;
 }

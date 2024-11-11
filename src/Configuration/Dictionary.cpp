@@ -25,8 +25,8 @@ void Dictionary::_setConfigDictionary()
 	std::string cgiExtensions[] = {".php", ".py"};
 	for (int i = 0; i < 2; i++)
 		supportedCGIExtensions[cgiExtensions[i]] = cgiExtensions->substr(1);
-	supportedCGIExecutors["php"] = "php-cgi -q";
-	// supportedCGIExecutors["php"] = "php -q";
+	supportedCGIExecutors["php"] = "php";
+	// supportedCGIExecutors["php"] = "php-cgi -q";
 	supportedCGIExecutors["py"] = "python3";
 	// cgiExtensions.
 	// for ()

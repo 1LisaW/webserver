@@ -365,7 +365,7 @@ void Configuration::start()
 				{
 					std::cout << "  Descriptor " << i << " is readable" << std::endl;
 					//close_conn = FALSE;
-					char buffer[1024];
+					unsigned char buffer[1024];
 					ssize_t rc = 0;
 					HTTPRequest *clientRequest = httpRequests[i];
 					while (true)
@@ -379,12 +379,12 @@ void Configuration::start()
 						memset(buffer, 0, 1024);
 						std::cout << "RECIVING....." << i << std::endl;
 						rc = recv(i, buffer, sizeof(buffer) - 1, 0);
-						
+
 
 						if ( rc > 0 )
 							buffer[rc] = '\0';
-						std::cout << buffer << std::endl;
-						std::cout << ".....RECIVING....." << rc << std::endl;
+						// std::cout << buffer << std::endl;
+						std::cout << ".....RECIVING....." << rc << " buff strlen " << std::endl;
 						if (rc < 0)
 						{
 							clientRequest->isFulfilled = true;
@@ -412,13 +412,11 @@ void Configuration::start()
 							//  close_conn = TRUE;
 							break;
 						}
-						// std::cout << "<<< REQUEST DATA" << std::endl;
-						// std::cout << buffer << std::endl;
 
-						// std::cout << ">>> REQUEST DATA" << std::endl;
-						clientRequest->fillRequestData(buffer);
+						clientRequest->fillRequestData(buffer, rc);
 						if (clientRequest->response == NULL)
 						{
+							std::cout << "RESPONSE CREATE" << std::endl;
 							std::string hostAndPort = clientRequest->headers["Host"];
 							std::string port = hostAndPort.substr(hostAndPort.find_first_of(':') + 1);
 							std::string host = hostAndPort.substr(0, hostAndPort.find_first_of(':'));
@@ -426,18 +424,14 @@ void Configuration::start()
 							std::string responseFile = currServer->getResponseFilePath(clientRequest);
 							HTTPResponse *response = new HTTPResponse(i, *clientRequest, responseFile);
 							clientRequest->response = response;
+							if (clientRequest->isHeadersSet && clientRequest->getBuffer().size())
+							{
+								clientRequest->fillRequestData((const unsigned char *)"", 0);
+							}
+						}
 
-						}
-						if (clientRequest->isHeadersSet && clientRequest->getBuffer().size())
-								clientRequest->fillRequestData("");
-						if (clientRequest->bodyToRead)
-						{
-							if (rc > (ssize_t)clientRequest->bodyToRead)
-								clientRequest->bodyToRead = 0;
-							else
-								clientRequest->bodyToRead -= rc;
-						}
-						std::cout << " ~~~~~~~~~~BODY TO READ " << clientRequest->bodyToRead << std::endl;
+						std::cout << " ~~~~~~~~~~BODY TO READ ";
+						std::cout << clientRequest->bodyToRead << std::endl;
 						if (clientRequest && clientRequest->response && clientRequest->response->isFulfilled)
 						{
 							std::cout << "SEND" << std::endl;
