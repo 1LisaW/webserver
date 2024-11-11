@@ -1,11 +1,16 @@
 <?php
 $config = parse_ini_file(".user.ini");
 print('~~~~~~~~PHP SCRIPT');
-// ini_set('upload_max_filesize', '10M');
+ini_set('upload_max_filesize', '10M');
+
+$value = ini_get('upload_max_filesize');
+
 // $upload_max_filesize = $config['upload_max_filesize'];
 // putenv("INI_PERDIR=$upload_max_filesize");
 // print "env is: ".."\n";
 phpinfo();
+print "env is: ".$value."\n";
+
 
 // print($config['database']);
 // print('--------------------------------------PHP SCRIPT---------------------');
