@@ -9,7 +9,6 @@
   <title>Directory Contents</title>
   <link rel="stylesheet" href="./styles/upload_listing.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <!-- <script src=".sorttable.js"></script> -->
 </head>
 
 <body>
@@ -17,22 +16,21 @@
   <div id="container">
 
     <div class="head_wrapper">
-    <h1>Directory Contents</h1>
-    <div class="upload_btn"><i class="material-icons">upload</i>
-      <div class="popup_upload popup_upload_hidden">
-          <div class="p-3">
-            <form enctype="multipart/form-data" action="/cgi-bin/index.php?document_root=cgi-bin&fastcgi_script_name=index.php" method="post">
+      <h1>Directory Contents</h1>
+      <div class="upload_btn"><i class="material-icons upload_btn_icon">upload</i>
+        <div class="popup_upload popup_upload_hidden">
+            <div class="p-3">
+              <form enctype="multipart/form-data" action="/cgi-bin/index.php?document_root=cgi-bin&fastcgi_script_name=index.php" method="post">
 
-              <div>
-              <p>File: <input type ="file" name="filename" /></p>
-
-              </div>
-              <div>
-              <input type="submit" class="btn btn-primary px-4" name="submit"  value="Post"/>
-              </div>
-            </form>
+                <div>
+                  <p>File: <input type ="file" name="filename" /></p>
+                </div>
+                <div>
+                  <input type="submit" class="btn btn-primary px-4" name="submit"  value="Post"/>
+                </div>
+              </form>
             </div>
-          </div>
+        </div>
       </div>
     </div>
     <table class="sortable">
@@ -191,7 +189,7 @@
         })
         console.log(result)
         const x = document.getElementById("snackbar");
-        x.innerHTML = `File ${name} was successfully deleted`;
+        x.innerHTML = `File ${name} was successfully deleted with a status ${result.status}`;
         x.className = "show";
         setTimeout(function(){
           x.className = x.className.replace("show", "");
@@ -205,19 +203,14 @@
 
         const url = './upload' +"?filename=" + name;
         window.location.href = url;
-        // const result = await fetch('./upload' +"?filename=" + name,  {
-        //   method: 'GET'
-        // })
-        // console.log(result)
-        // const x = document.getElementById("snackbar");
-        // x.innerHTML = `File ${name} was successfully downloaded`;
-        // x.className = "show";
-        // setTimeout(function(){
-        //   x.className = x.className.replace("show", "");
-        //   // if(result.ok) {
-        //   //   window.location.reload();
-        //   // }
-        // }, 3000);
+      }
+      else if(event.target.classList.contains('upload_btn_icon')) {
+        const popup = document.getElementsByClassName('popup_upload')[0];
+        console.log(popup);
+        popup.classList.toggle("popup_upload_hidden");
+      
+        // const url = './upload' +"?filename=" + name;
+        // window.location.href = url;
       }
     })
   </script>
