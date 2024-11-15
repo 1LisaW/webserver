@@ -31,6 +31,7 @@ class Dictionary
 
 		std::map<std::string, std::string> configVariables;
 		std::map<std::string, std::string> supportedCGIExtensions;
+		std::map<std::string, std::string> supportedCGIExecutorsFlag;
 		std::map<std::string, std::string> supportedCGIExecutors;
 
 		void _setContentTypes();
@@ -49,6 +50,7 @@ class Dictionary
 		bool	isAttributeInLocationDictionary(std::string attributeName);
 		std::string getSupportedCGIExtension(std::string ext);
 		std::string getSupportedCGIExecutor(std::string ext);
+		std::string getSupportedCGIExecutorFlag(std::string ext);
 };
 
 

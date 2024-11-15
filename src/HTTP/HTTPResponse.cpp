@@ -36,8 +36,11 @@ HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath)
 		response_headers.append("\r\n");
 		response_headers.append("Content-Type: text/plain; charset=utf-8\r\n");
 		response.append(response_headers);
+		response.append("\r\n");
+		response.append("\r\n");
 		std::cout << "RESPONSE REDIRECT_REQUEST " << response << "|" << std::endl;
-		sendResponse();
+		isFulfilled = true;
+		// sendResponse();
 		return ;
 	}
 
@@ -197,6 +200,57 @@ void HTTPResponse::urlEncode(std::string &string)
     }
 }
 
+void HTTPResponse::sendResponse()
+{
+	std::cout << MAGENTA << "SEND DATA " << RESET << std::endl;
+	eRequestType r_type = _request.getRequestType();
+
+	if (!_request.location || !(_request.location->isCgi))
+		return ;
+	if (r_type != GET_FILE && r_type != DELETE_DATA)
+		return ;
+	std::cout << MAGENTA << "SEND DATA CGI " << _request.location->isCgi << RESET << std::endl;
+
+	std::string s;
+	char ch;
+	while (read(cgiResponseFds[0], &ch, 1) > 0)
+	{
+		std::cout << "CHar: " << ch << std::endl;
+		// if (!ch)
+		s.push_back(ch);
+		if (ch == '\n')
+			break;
+	}
+	std::cout << "First string: " << s << std::endl;
+	if (s.find("Status: ") == 0)
+	{
+		s.erase(s.begin(), s.begin() + 7);
+		response.append(_request.get_protocol_v());
+		response.append(s);
+	}
+	// if(!s.compare("Status: 200 OK\r"))
+	// {
+
+	// 	response.append(_request.get_protocol_v());
+	// 	response.append(" 200 OK\r\n");
+	// }
+	s.clear();
+
+	// char ch;
+	while (read(cgiResponseFds[0], &ch, 1) > 0)
+	{
+			std::cout << GREEN << ch << RESET;
+
+			response.push_back(ch);
+	}
+	isFulfilled = true;
+	std::cout << BLUE << response << RESET << std::endl;
+	std::cout << MAGENTA << "SEND DATA END" << RESET << std::endl;
+	close(cgiResponseFds[0]);
+	std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes\n\n" << RESET << std::endl;
+
+}
+
 void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 {
 	if (_request.location && _request.location->isCgi)
@@ -211,6 +265,13 @@ void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 			{
 				std::cout << GREEN << "Is readable" << RESET << std::endl;
 				write(tubes[1], buffer.c_str(), buffer.size());
+				// char ch;
+				// while (read(cgiResponseFds[0], &ch, 1) > 0)
+				// {
+				// 		std::cout << GREEN << "+CHar: " << ch << RESET << std::endl;
+
+				// 		response.push_back(ch);
+				// }
 			}
 			else
 				std::cout << RED << "Is not readable " << read(tubes[0], NULL, 0) << RESET << std::endl;
@@ -241,16 +302,17 @@ void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 			// 	response.append(" 200 OK\r\n");
 			// }
 			// s.clear();
-			// while (read(cgiResponseFds[0], &ch, 1) > 0)
-			// {
-			// 		std::cout << GREEN << "+CHar: " << ch << RESET << std::endl;
 
-			// 		response.push_back(ch);
-			// }
 			if (_request.isFulfilled)
 			{
+				// while (read(cgiResponseFds[0], &ch, 1) > 0)
+				// {
+				// 		std::cout << GREEN << "+CHar: " << ch << RESET << std::endl;
+
+				// 		response.push_back(ch);
+				// }
 				close(cgiResponseFds[0]);
-				close(cgiResponseFds[1]);
+				// close(cgiResponseFds[1]);
 				std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes\n\n" << RESET << std::endl;
 
 			}
@@ -318,6 +380,8 @@ void HTTPResponse::clearEnvVariables(char ***envp)
 
 void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 {
+	std::cout << GREEN << " ~~~ " << location->cgiInclude << " " << location->cgiParams.begin()->first << " " << location->cgiParams.begin()->second<< RESET << std::endl;
+	std::cout << GREEN << " CGI root " << location->root << RESET << std::endl;
 	std::string filePath = request->get_path();
 	std::string ext = location->getCgiExtentionFromUri(filePath);
 	std::string supportedExt = request->dictionary.getSupportedCGIExtension(ext);
@@ -330,7 +394,7 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 		supportedExt = request->dictionary.getSupportedCGIExtension(ext);
 		std::cout << "Second get filePath: " << filePath <<" ext: " << ext << " supportedExt " << supportedExt << std::endl;
 	}
-	if (supportedExt.empty())
+	if (supportedExt.empty() && request->get_method().compare("DELETE"))
 	{
 		std::cout << "Incorrect data in config for cgi" << std::endl;
 		return ;
@@ -342,28 +406,33 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 	std::cout << CYAN  << "---cgiResponseFds(pipe) is " << cgiResponseFds[0] << " "<< cgiResponseFds[1] << "\n" << RESET << std::endl;
 
 	// cgiResponseFd = cgiResponseFds[0];
+	if (!request->get_method().compare("DELETE"))
+	{
+		supportedExt.clear();
+		supportedExt = "php";
+	}
 	scriptExec = request->dictionary.getSupportedCGIExecutor(supportedExt);
-	scriptExec.append(" ");
-	scriptExec.append(".");
-	scriptExec.append(filePath);
+	std::string scriptExecFlag = request->dictionary.getSupportedCGIExecutorFlag(supportedExt);
 
 	pid_t cgi_pid;
-	char * paramsList[3];
-	// paramsList[0] = (char *)"/bin/bash";
-	// paramsList[1] = (char *)"-c";
+	char * paramsList[4];
 
-	putenv((char *)"upload_max_filesize=20M");
-	paramsList[0] = (char *)"/bin/php-cgi";
-	paramsList[1] = (char *)"./cgi-bin/index.php";
-	// paramsList[2] =(char *)scriptExec.c_str();
-	paramsList[2] = NULL;
+	size_t idx = 0;
+	std::cout << GREEN << "~~~~ Executor: " << request->dictionary.getSupportedCGIExecutor(supportedExt) << " flag: " << request->dictionary.getSupportedCGIExecutorFlag(supportedExt) << RESET << std::endl;
+	paramsList[idx++] = (char *)scriptExec.c_str();
+	if (scriptExecFlag.size())
+		paramsList[idx++] = (char *)scriptExecFlag.c_str();
+	std::string scriptPath;
+	scriptPath.append(".");
+	scriptPath.append(location->root);
+	scriptPath.append("/");
+	scriptPath.append(location->cgiIndex);
+	// paramsList[idx++] = (char *)"./cgi-bin/index.php";
+	paramsList[idx++] = (char *)scriptPath.c_str();
+	paramsList[idx++] = NULL;
 	char ***envp = NULL;
 	envp = new char **[1];
-	// std::cout << "SCRIPT " << scriptExec << std::endl;
 	getEnvVariables(envp);
-	// std::cout << "SCRIPT " << scriptExec << std::endl;
-	// std::cout << "*envp[0] "<< (*envp)[0] << " " << paramsList[2]<< std::endl;
-	std::cout << PIPE_BUF << std::endl;
 	cgi_pid = fork();
 	if (cgi_pid < 0)
 	{
@@ -373,30 +442,22 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 	if (cgi_pid == 0) // child process
 	{
 		std::cout << MAGENTA << "\n\n--1.2-- CHILD CLOSE PIPE tubes\n\n" << RESET << std::endl;
-		// dup2(cgiResponseFds[1], STDOUT_FILENO);
+		dup2(cgiResponseFds[1], STDOUT_FILENO);
 		close(cgiResponseFds[1]);
 		close(cgiResponseFds[0]);
 
 		dup2(tubes[0], STDIN_FILENO);
 		close(tubes[0]);
 		close(tubes[1]);
-		// std::cout << "SMTH OUT OF FORK" << std::endl;
 		execve(paramsList[0], paramsList, *envp);
 	}
 	else
 	{
 		clearEnvVariables(envp);
 		delete [] envp;
-		//close(tubes[0]);
+		close(cgiResponseFds[1]);
 		std::cout << "---tubes[1](parent) is " << tubes[1] << std::endl;
-
-		// std::string buffer = request->getBuffer();
-		// write(tubes[1], buffer.c_str(), buffer.size());
-		// close(cgiResponseFds[1]);
+		sendResponse();
 	}
-	response.clear();
 }
 
-void HTTPResponse::sendResponse()
-{
-}

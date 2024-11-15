@@ -365,7 +365,7 @@ void Configuration::start()
 				{
 					std::cout << "  Descriptor " << i << " is readable" << std::endl;
 					//close_conn = FALSE;
-					unsigned char buffer[1024];
+					unsigned char buffer[4096];
 					ssize_t rc = 0;
 					HTTPRequest *clientRequest = httpRequests[i];
 					while (true)
@@ -376,7 +376,7 @@ void Configuration::start()
 						/* failure occurs, we will close the          */
 						/* connection.                                */
 						/**********************************************/
-						memset(buffer, 0, 1024);
+						memset(buffer, 0, 4096);
 						std::cout << "RECIVING....." << i << std::endl;
 						rc = recv(i, buffer, sizeof(buffer) - 1, 0);
 
@@ -397,6 +397,7 @@ void Configuration::start()
 						}
 						if (rc == 0)
 						{
+							std::cout << " clientRequest->isFulfilled rc == 0 " << std::endl;
 							clientRequest->isFulfilled = true;
 							delete httpRequests[i];
 							clientRequest = NULL;
@@ -412,7 +413,7 @@ void Configuration::start()
 							//  close_conn = TRUE;
 							break;
 						}
-
+						std::cout << CYAN << "RECV: " << buffer << RESET << std::endl;
 						clientRequest->fillRequestData(buffer, rc);
 						if (clientRequest->response == NULL)
 						{
@@ -435,6 +436,7 @@ void Configuration::start()
 						if (clientRequest && clientRequest->response && clientRequest->response->isFulfilled)
 						{
 							std::cout << "SEND" << std::endl;
+							std::cout << YELLOW << clientRequest->response->response << RESET << std::endl;
 							send(i , clientRequest->response->response.c_str(), clientRequest->response->response.size(),0);
 							delete httpRequests[i];
 							httpRequests[i] = new HTTPRequest(i, (this->dictionary));

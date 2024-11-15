@@ -1,50 +1,67 @@
 <?php
 $config = parse_ini_file(".user.ini");
-print('~~~~~~~~PHP SCRIPT');
-ini_set('upload_max_filesize', '10M');
-
-$value = ini_get('upload_max_filesize');
-
-// $upload_max_filesize = $config['upload_max_filesize'];
-// putenv("INI_PERDIR=$upload_max_filesize");
-// print "env is: ".."\n";
-phpinfo();
-print "env is: ".$value."\n";
-
-
-// print($config['database']);
-// print('--------------------------------------PHP SCRIPT---------------------');
-
-// $f = fopen( 'php://stdin', 'r' );
-// while( $line = fgets( $f ) ) {
-// //   echo $line;
-// }
-// print('+++++++++++++++++++PHP SCRIPT++++++++++++++++++++++++');
-
 $uploaddir = $config['database'];
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET')
 {
-
-  if (file_exists($uploadfile))
+  if ($_GET && $_GET['filename'])
   {
-
+    $filename =  $uploaddir . $_GET['filename'];;
+    if (file_exists($filename) && is_file($filename))
+    {
+      header('Status: 200 OK');
+      $cont_disp = "attachment; filename=" . $_GET['filename'];
+      header("Content-Disposition: $cont_disp");
+      $size = filesize($filename);
+      header("Content-length: $size");
+      readfile($filename);
+    }
+    else if (!is_file($filename))
+    {
+      header('Status: 404 Not Found');
+    }
+    exit();
   }
-  else{
 
-  }
+  http_response_code(200);
+  header('Status: 200 OK');
+  include('./upload_listing/upload_listing.php');
+
+  exit();
+
 }
 if ($_SERVER['REQUEST_METHOD'] == 'DELETE')
 {
-
-  if (file_exists($uploadfile))
+  // printf("DELETE!!!");
+  // printf($_SERVER['QUERY_STRING']);
+  $filename = $uploaddir . $_GET['filename'];
+  if (file_exists($filename) && is_file($filename))
   {
-
+    unlink($filename);
+    header('Status: 200 OK');
+    header('Content-length: 0');
   }
-  else{
-
+  else
+  {
+    header('Status: 204 No Content');
   }
+  // printf($filename);
+  // print_r($_SERVER);
+  // print_r($_GET);
+  // print_r($_POST);
+  // print_r($_FILES);
+  // print_r($_ENV);
+  // print_r($_FILES['filename']['error']);
+  exit();
+
+  // if (file_exists($uploadfile))
+  // {
+
+  // }
+  // else{
+
+  // }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

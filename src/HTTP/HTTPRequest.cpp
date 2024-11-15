@@ -335,10 +335,65 @@ void HTTPRequest::fillRequestData(unsigned char const * _buffer, ssize_t rc)
 {
     std::string buffer;
     buffer.append((char*)(_buffer), rc);
-    std::cout << "STEP: fillRequestData " << "- isFulfield " << isFulfilled << " -bodyToRead " << bodyToRead <<std::endl;
-    if (isHeadersSet)
+    switch (_requestType)
     {
-        buff.append(buffer.c_str(), buffer.size());
+    case UNKNOWN_REQUEST_TYPE:
+         // if request reads the buffer for the first time
+        buff.append(buffer.c_str(), rc);
+        if (rc <= 0)
+        {
+            this->status_code = bad_request;
+            std::cout << RED << "Empty request" << RESET << std::endl;
+            return ;
+        }
+        //  set method
+        this->method.append(buff.substr(0, buff.find_first_of(' ')));
+        buff.erase(0, this->method.length());
+        buff.erase(0, buff.find_first_not_of(" "));
+        if (!dictionary.isMethodInDictionary(method))
+        {
+            this->status_code = bad_request;
+            std::cout << "NOT FOUND! - " << method << std::endl;
+        }
+        if (!method.compare("GET"))
+        {
+            std::cout << "METHOD GET. SET FULFILLED" << std::endl;
+            _requestType = GET_FILE;
+            isFulfilled = true;
+        }
+        else if (!method.compare("POST"))
+            _requestType = POST_DATA;
+        else if (!method.compare("DELETE"))
+        {
+            _requestType = DELETE_DATA;
+            isFulfilled = true;
+        }
+        //  set path
+        this->path.append(buff.substr(0, buff.find_first_of(' ')));
+        buff.erase(0, this->path.length());
+        buff.erase(0, buff.find_first_not_of(" "));
+        std::cout << YELLOW << "REQUEST uri " << path << " method " << method << RESET << std::endl;
+        //  set protocol
+        this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
+        buff.erase(0, this->protocol_v.length() + 1);
+
+        if (this->protocol_v.compare("HTTP/1.1"))
+        {
+            this->status_code = bad_request;
+            std::cout << " BAD PROTOCOL |" << this->protocol_v << "|" << std::endl;
+            return ;
+        }
+        buff.erase(0, buff.find_first_not_of("\r\n"));
+        _fillQueryParams();
+        fillRequestHeaders("");
+        break;
+    case POST_DATA:
+        if (!isHeadersSet)
+        {
+             this->status_code = request_header_fields_too_large;
+             break;
+        }
+         buff.append(buffer.c_str(), buffer.size());
         std::cout << "~~~~~~~~~LESSEN BODY SIZE on " << buff.size() << "\n" << "Body to read: " << bodyToRead << std::endl;
         if (bodyToRead < buff.size())
             bodyToRead = 0;
@@ -360,55 +415,93 @@ void HTTPRequest::fillRequestData(unsigned char const * _buffer, ssize_t rc)
         response->setRequestData(buff.c_str(), buff.size());
         buff.clear();
         return ;
+        // break;
+    default:
+         if (!isHeadersSet)
+        {
+             this->status_code = request_header_fields_too_large;
+             break;
+        }
+       return ;
+    }
+    std::cout << "STEP: fillRequestData " << "- isFulfield " << isFulfilled << " -bodyToRead " << bodyToRead <<std::endl;
+    if (isHeadersSet)
+    {
+        // buff.append(buffer.c_str(), buffer.size());
+        // std::cout << "~~~~~~~~~LESSEN BODY SIZE on " << buff.size() << "\n" << "Body to read: " << bodyToRead << std::endl;
+        // if (bodyToRead < buff.size())
+        //     bodyToRead = 0;
+        // else
+        //     bodyToRead -= buff.size();
+        // if (buff.size() > bodyLimiter.size())
+        // {
+        //     lastBuff.clear();
+        // }
+        // lastBuff.append(buff.c_str(), buff.size());
+
+        // if (bodyToRead <= 0 || (bodyToRead > 0 && lastBuff.find(bodyLimiter) < lastBuff.size()))
+        // {
+
+        //     isFulfilled = true;
+        //     std::cout << "SET fulfield" << std::endl;
+        // }
+
+        // response->setRequestData(buff.c_str(), buff.size());
+        // buff.clear();
+        // return ;
     }
     // Waiting for the next chunk of header data
-    else if (_requestType != UNKNOWN_REQUEST_TYPE)
-    {
-        fillRequestHeaders(buffer.c_str());
-        return ;
-    }
+    // else if (_requestType != UNKNOWN_REQUEST_TYPE)
+    // {
+    //     fillRequestHeaders(buffer.c_str());
+    //     return ;
+    // }
 
-    // if request reads the buffer for the first time
-    buff.append(buffer.c_str(), rc);
-    if (rc <= 0)
-    {
-        this->status_code = bad_request;
-        std::cout << "Empty request" << std::endl;
-        return ;
-    }
-    //  set method
-    this->method.append(buff.substr(0, buff.find_first_of(' ')));
-    buff.erase(0, this->method.length());
-    buff.erase(0, buff.find_first_not_of(" "));
-    if (!dictionary.isMethodInDictionary(method))
-    {
-        this->status_code = bad_request;
-        std::cout << "NOT FOUND! - " << method << std::endl;
-    }
-    if (!method.compare("GET"))
-        _requestType = GET_FILE;
-    else if (!method.compare("POST"))
-        _requestType = POST_DATA;
-    else if (!method.compare("DELETE"))
-        _requestType = DELETE_DATA;
-    //  set path
-    this->path.append(buff.substr(0, buff.find_first_of(' ')));
-    buff.erase(0, this->path.length());
-    buff.erase(0, buff.find_first_not_of(" "));
-     //  set protocol
-    this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
-    buff.erase(0, this->protocol_v.length() + 1);
+    // // if request reads the buffer for the first time
+    // buff.append(buffer.c_str(), rc);
+    // if (rc <= 0)
+    // {
+    //     this->status_code = bad_request;
+    //     std::cout << "Empty request" << std::endl;
+    //     return ;
+    // }
+    // //  set method
+    // this->method.append(buff.substr(0, buff.find_first_of(' ')));
+    // buff.erase(0, this->method.length());
+    // buff.erase(0, buff.find_first_not_of(" "));
+    // if (!dictionary.isMethodInDictionary(method))
+    // {
+    //     this->status_code = bad_request;
+    //     std::cout << "NOT FOUND! - " << method << std::endl;
+    // }
+    // if (!method.compare("GET"))
+    // {
+    //     std::cout << "METHOD GET. SET FULFILLED" << std::endl;
+    //     _requestType = GET_FILE;
+    //     isFulfilled = true;
+    // }
+    // else if (!method.compare("POST"))
+    //     _requestType = POST_DATA;
+    // else if (!method.compare("DELETE"))
+    //     _requestType = DELETE_DATA;
+    // //  set path
+    // this->path.append(buff.substr(0, buff.find_first_of(' ')));
+    // buff.erase(0, this->path.length());
+    // buff.erase(0, buff.find_first_not_of(" "));
+    //  //  set protocol
+    // this->protocol_v.append(buff.substr(0, buff.find_first_of('\r')));
+    // buff.erase(0, this->protocol_v.length() + 1);
 
-    if (this->protocol_v.compare("HTTP/1.1"))
-    {
-        this->status_code = bad_request;
-        std::cout << " BAD PROTOCOL |" << this->protocol_v << "|" << std::endl;
-        return ;
+    // if (this->protocol_v.compare("HTTP/1.1"))
+    // {
+    //     this->status_code = bad_request;
+    //     std::cout << " BAD PROTOCOL |" << this->protocol_v << "|" << std::endl;
+    //     return ;
 
-    }
+    // }
 	// std::cout << "PROTOCOL " << protocol_v << " " << get_protocol_v() << std::endl;
 
-    buff.erase(0, buff.find_first_not_of("\r\n"));
-    _fillQueryParams();
-    fillRequestHeaders("");
+    // buff.erase(0, buff.find_first_not_of("\r\n"));
+    // _fillQueryParams();
+    // fillRequestHeaders("");
 }

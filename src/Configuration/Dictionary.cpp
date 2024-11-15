@@ -25,9 +25,10 @@ void Dictionary::_setConfigDictionary()
 	std::string cgiExtensions[] = {".php", ".py"};
 	for (int i = 0; i < 2; i++)
 		supportedCGIExtensions[cgiExtensions[i]] = cgiExtensions->substr(1);
-	supportedCGIExecutors["php"] = "php";
-	// supportedCGIExecutors["php"] = "php-cgi -q";
-	supportedCGIExecutors["py"] = "python3";
+	// supportedCGIExecutors["php"] = "php";
+	supportedCGIExecutors["php"] = "/bin/php-cgi";
+	supportedCGIExecutors["py"] = "/bin/python3";
+	// supportedCGIExecutorsFlag["php"] = "-q";
 	// cgiExtensions.
 	// for ()
 	// supportedCGIExtensions[".php"] = "php";
@@ -122,6 +123,14 @@ std::string Dictionary::getSupportedCGIExecutor(std::string ext)
 {
 	if (this->supportedCGIExecutors.find(ext) != this->supportedCGIExecutors.end())
 		return (this->supportedCGIExecutors[ext]);
+	else
+		return ("");
+}
+
+std::string Dictionary::getSupportedCGIExecutorFlag(std::string ext)
+{
+	if (this->supportedCGIExecutorsFlag.find(ext) != this->supportedCGIExecutorsFlag.end())
+		return (this->supportedCGIExecutorsFlag[ext]);
 	else
 		return ("");
 }

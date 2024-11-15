@@ -51,6 +51,7 @@ public:
 	void setRequestData(const char *buffer, ssize_t len);
 	void getEnvVariables(char ***envp);
 	void clearEnvVariables(char ***envp);
+	// void sendResponse();
 };
 
 #endif
