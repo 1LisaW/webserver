@@ -25,14 +25,8 @@ void Dictionary::_setConfigDictionary()
 	std::string cgiExtensions[] = {".php", ".py"};
 	for (int i = 0; i < 2; i++)
 		supportedCGIExtensions[cgiExtensions[i]] = cgiExtensions->substr(1);
-	// supportedCGIExecutors["php"] = "php";
 	supportedCGIExecutors["php"] = "/bin/php-cgi";
 	supportedCGIExecutors["py"] = "/bin/python3";
-	// supportedCGIExecutorsFlag["php"] = "-q";
-	// cgiExtensions.
-	// for ()
-	// supportedCGIExtensions[".php"] = "php";
-	// supportedCGIExtensions[".py"] = "py";
 }
 
 int	Dictionary::getConfigBlockLevel(std::string blockName)
@@ -42,16 +36,16 @@ int	Dictionary::getConfigBlockLevel(std::string blockName)
 	return (configBlockLevels[blockName]);
 }
 
-bool Dictionary::isAttributeInServerDictionary(std::string attribureName)
+bool Dictionary::isAttributeInServerDictionary(std::string attributeName)
 {
-	if (configServerAttributes.find(attribureName) == configServerAttributes.end())
+	if (configServerAttributes.find(attributeName) == configServerAttributes.end())
 		return (false);
 	return (true);
 }
 
-bool Dictionary::isAttributeInLocationDictionary(std::string attribureName)
+bool Dictionary::isAttributeInLocationDictionary(std::string attributeName)
 {
-	if (configLocationAttributes.find(attribureName) == configLocationAttributes.end())
+	if (configLocationAttributes.find(attributeName) == configLocationAttributes.end())
 		return (false);
 	return (true);
 }
@@ -68,6 +62,7 @@ void Dictionary::_setContentTypes()
 	contentTypes["gif"] = "image/gif";
 	contentTypes["jpeg"] = "image/jpeg";
 	contentTypes["png"] = "image/png";
+	contentTypes["svg"] = "image/svg+xml";
 }
 
 void Dictionary::_setMethods()
@@ -76,10 +71,6 @@ void Dictionary::_setMethods()
 	methods = std::set<std::string>(methodsArr, methodsArr + sizeof(methodsArr) / sizeof(methodsArr[0]));
 }
 
-// void Dictionary::_setLocationAttributes()
-// {
-// 	const std::string attributes[] = {"root", "index", "allow_methods", "error_page"};
-// }
 
 void Dictionary::init()
 {

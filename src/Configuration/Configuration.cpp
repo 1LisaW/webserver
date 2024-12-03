@@ -235,14 +235,14 @@ void Configuration::_initServerSockets()
 	{
 		ServerConfig *serverConfig = *(serverConfigIt);
 		WebServer *server = new WebServer(serverConfig, dictionary);
-		std::cout << "TEST INNER SERVERCONF DATA" << std::endl;
+		std::cout << "TEST INNER SERVER_CONF DATA" << std::endl;
 		std::cout << *server->getServerNameAliases().begin() << std::endl;
 		_webServers.push_back(server);
 		// take all ports for server
 		std::set<std::string> listenPorts = serverConfig->getListenPorts();
 		for(std::set<std::string>::iterator portInfoIt = listenPorts.begin(); portInfoIt != listenPorts.end(); portInfoIt++)
 		{
-			// check on existance of listening socket for current port
+			// check on existence of listening socket for current port
 			std::string portInfo = *portInfoIt;
 			if (_serverSockets.find(portInfo) == _serverSockets.end())
 			{
@@ -416,7 +416,7 @@ void Configuration::start()
 						std::cout << BOLDYELLOW << "clientRequest->response->isFulfilled " << clientRequest->response->isFulfilled << RESET << std::endl;
 						if (clientRequest && clientRequest->response && clientRequest->isFulfilled)
 						{
-							std::cout << YELLOW << "SEND RESPOSE FULFIELD" << RESET << std::endl;
+							std::cout << YELLOW << "SEND RESPOSE FULFILLED" << RESET << std::endl;
 
 							clientRequest->response->sendResponse();
 							std::cout << BOLDYELLOW << "SEND configuration" << RESET << std::endl;

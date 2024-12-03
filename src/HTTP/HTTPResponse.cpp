@@ -43,7 +43,6 @@ HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath)
 		response.append("\r\n");
 		std::cout << "RESPONSE REDIRECT_REQUEST " << response << "|" << std::endl;
 		isFulfilled = true;
-		// sendResponse();
 		return ;
 	}
 
@@ -60,12 +59,8 @@ HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath)
 	std::string fileExtention = getUriExtention(filePath);
 	if (request.getRequestType() == GET_DIR_LIST)
 		fileExtention.replace(fileExtention.begin(), fileExtention.end(), "html");
-	//  fileExtention = getUriExtention(filePath);
-	// std::cout << "fileExtention " << fileExtention << " filePath " << filePath.empty() << " getContentTypeFromDictionary " <<_request.dictionary.getContentTypeFromDictionary(fileExtention) << " " <<_request.dictionary.getContentTypeFromDictionary("html") << std::endl;
 	response_headers.append(_request.dictionary.getContentTypeFromDictionary(fileExtention));
 	response_headers.append("\r\n");
-	// if ()
-	std::cout << "LOCATION:  " << request.get_path() << std::endl;
 	if (request.getRequestType() == GET_DIR_LIST)
 		content.append(getDirectoryListing(filePath, request.get_path()));
 	else
@@ -79,12 +74,6 @@ HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath)
 	response.append("\r\n");
 	response.append(content);
 	this->isFulfilled = true;
-	// if (!request.get_method().compare("GET"))
-	// {
-
-	// 	sendResponse();
-
-	// }
 }
 
 HTTPResponse::~HTTPResponse()
@@ -109,7 +98,6 @@ void HTTPResponse::_set_content(std::string filePath)
 		std::cerr << "file open error\n";
 		content.clear();
 		content.append(getDefaultErrorPageContent(_request.get_status_code()));
-		// std::fclose(fileToRead);
 		return ;
 
 	}
@@ -170,7 +158,6 @@ std::string HTTPResponse::getDirectoryListing(std::string filePath, std::string 
 			content.append("\">\r\n");
 			content.append(ent->d_name);
 			content.append(" ");
-			// printf ("%s\n", ent->d_name);
 			content.append("</a>\r\n");
 			content.append("</div>\r\n");
 
@@ -182,7 +169,6 @@ std::string HTTPResponse::getDirectoryListing(std::string filePath, std::string 
 	else {
   	/* could not open directory */
   		perror ("");
-  	// return EXIT_FAILURE;
 	}
 	return (content);
 }
@@ -216,16 +202,12 @@ void HTTPResponse::sendResponse()
 		return ;
 	if (r_type == POST_DATA && !_request.isFulfilled)
 		return ;
-	// if (r_type != GET_FILE && r_type != DELETE_DATA)
-		// return ;
 	std::cout << MAGENTA << "SEND DATA CGI " << _request.location->isCgi << RESET << std::endl;
 
 	std::string s;
 	char ch;
 	while (read(cgiResponseFds[0], &ch, 1) > 0)
 	{
-		// std::cout << "CHar: " << ch << std::endl;
-		// if (!ch)
 		s.push_back(ch);
 		if (ch == '\n')
 			break;
@@ -237,26 +219,15 @@ void HTTPResponse::sendResponse()
 		response.append(_request.get_protocol_v());
 		response.append(s);
 	}
-	// if(!s.compare("Status: 200 OK\r"))
-	// {
-
-	// 	response.append(_request.get_protocol_v());
-	// 	response.append(" 200 OK\r\n");
-	// }
 	s.clear();
 
-	// char ch;
 	while (read(cgiResponseFds[0], &ch, 1) > 0)
 	{
-			// std::cout << GREEN << ch << RESET;
-
 			response.push_back(ch);
 	}
 	std::cout << "Rest response: " << response << std::endl;
 
 	isFulfilled = true;
-	// std::cout << BLUE << response << RESET << std::endl;
-	// std::cout << MAGENTA << "SEND DATA END" << RESET << std::endl;
 	close(cgiResponseFds[0]);
 	std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes (sendResponse)\n\n" << RESET << std::endl;
 
@@ -284,11 +255,6 @@ void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 			close(tubes[0]);
 			std::cout << MAGENTA << "\n\n--1.4-- PARENT CLOSE PIPE tubes\n\n" << RESET << std::endl;
 
-			// if (isFulfilled)
-			// {
-			// 	close(cgiResponseFds[0]);
-			// 	std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes (setRequestData)\n\n" << RESET << std::endl;
-			// }
 		}
 	}
 }
@@ -320,7 +286,6 @@ void HTTPResponse::getEnvVariables(char ***envp)
 	env["SCRIPT_NAME"] = "./cgi-bin/index.php"; //_request.get_path();
 	env["SCRIPT_FILENAME"] = "./cgi-bin/index.php"; //_request.get_path();
 	env["REDIRECT_STATUS"] = "CGI";
-	// env["SERVER_PORT"] = _request.
 	*envp = new char *[env.size() + 1];
 	size_t idx = 0;
 	for (std::map<std::string, std::string>::iterator envIt = env.begin(); envIt != env.end(); envIt++)
@@ -374,7 +339,6 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 	pipe(cgiResponseFds);
 	std::cout << CYAN  << "---cgiResponseFds(pipe) is " << cgiResponseFds[0] << " "<< cgiResponseFds[1] << "\n" << RESET << std::endl;
 
-	// cgiResponseFd = cgiResponseFds[0];
 	if (!request->get_method().compare("DELETE"))
 	{
 		supportedExt.clear();

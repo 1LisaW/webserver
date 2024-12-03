@@ -36,7 +36,6 @@ public:
     std::map<std::string, std::string> headers;
 
     HTTPRequest(int clientFd, Dictionary &dict);
-    // HTTPRequest(char const * buffer, Dictionary &dict);
     HTTPRequest &operator=(HTTPRequest &rhs);
     ~HTTPRequest();
 

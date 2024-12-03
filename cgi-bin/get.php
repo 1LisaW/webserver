@@ -18,20 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET')
       $size = filesize($filename);
       if ($size > 4000)
       {
-        // header('Status: 200 OK');
-
-        // header('Status: 206 Partial Сontent');
-        // http_response_code(200);
-
         require_once('./partial_content.php');
         serveFilePartial($filename, $filename);
       }
-        // header('Status: 206 Partial content');
       else
         header('Status: 200 OK');
       $cont_disp = "attachment; filename=" . $_GET['filename'];
       header("Content-Disposition: $cont_disp");
-      // $size = filesize($filename);
       header("Content-length: $size");
       readfile($filename);
     }

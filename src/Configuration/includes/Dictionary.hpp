@@ -36,7 +36,6 @@ class Dictionary
 
 		void _setContentTypes();
 		void _setMethods();
-		// void _setLocationAttributes();
 		void _setConfigDictionary();
 	public:
 		Dictionary();

@@ -134,11 +134,11 @@ void HTTPRequest::fillRequestHeaders(char const * buffer)
         }
         if (!key.compare("Content-Type"))
         {
-            std::string bounadyTitle = "boundary=";
-            size_t boudatyStart = header.find(bounadyTitle);
-            if (boudatyStart < header.size())
+            std::string boundaryTitle = "boundary=";
+            size_t boundaryStart = header.find(boundaryTitle);
+            if (boundaryStart < header.size())
             {
-                boundary = header.substr(boudatyStart + bounadyTitle.size());
+                boundary = header.substr(boundaryStart + boundaryTitle.size());
                 bodyLimiter.append(boundary);
                 bodyLimiter.append("--\r\n\r\n");
             }
@@ -148,7 +148,7 @@ void HTTPRequest::fillRequestHeaders(char const * buffer)
     buff.erase(0, buff.find_first_not_of("\r\n"));
     isHeadersSet = true;
     // this->isFulfilled = true;
-    //  chack on header "Host"
+    //  check on header "Host"
     if (headers.find("Host") == headers.end())
     {
          this->status_code = bad_request;
@@ -163,7 +163,6 @@ void HTTPRequest::_fillQueryParams()
     size_t queryParamsStartPos = this->path.find('?');
     if (queryParamsStartPos != std::string::npos)
     {
-        std::cout << "QUERRY!!!!!" << std::endl;
         std::string queryParamsStr = this->path.substr(queryParamsStartPos + 1);
         this->path.erase(this->path.begin() + queryParamsStartPos, this->path.end());
         // set parameters
@@ -288,5 +287,5 @@ void HTTPRequest::fillRequestData(unsigned char const * _buffer, ssize_t rc)
         }
        return ;
     }
-    std::cout << "STEP: fillRequestData " << "- isFulfield " << isFulfilled << " -bodyToRead " << bodyToRead <<std::endl;
+    std::cout << "STEP: fillRequestData " << "- isFulfilled " << isFulfilled << " -bodyToRead " << bodyToRead <<std::endl;
 }

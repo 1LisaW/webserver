@@ -24,8 +24,6 @@ class HTTPResponse
 {
 private:
 	int clientFd;
-	// int fdForCGIIncome;
-	// int cgiResponseFd;
 	int tubes[2];
 	int cgiResponseFds[2];
 	enum status_code_value status_code;
@@ -34,8 +32,6 @@ private:
 	std::string response_headers;
 	std::string content;
 	void	_set_content(std::string filePath);
-	// char *paramsCGIList[4];
-	// char ***envp;
 	std::string scriptExec;
 public:
 	HTTPResponse(int clientFd, HTTPRequest &request, std::string filePath);
@@ -51,7 +47,6 @@ public:
 	void setRequestData(const char *buffer, ssize_t len);
 	void getEnvVariables(char ***envp);
 	void clearEnvVariables(char ***envp);
-	// void sendResponse();
 };
 
 #endif
