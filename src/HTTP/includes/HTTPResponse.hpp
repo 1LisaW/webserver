@@ -45,7 +45,7 @@ public:
 	void	get();
 	void sendResponse();
 	std::string getDefaultErrorPageContent(enum status_code_value statusCode);
-	std::string getDirectoryListing(std::string filePath);
+	std::string getDirectoryListing(std::string filePath, std::string location);
 	void urlEncode(std::string &url);
 	void runCGI(LocationConfig *location, HTTPRequest *request);
 	void setRequestData(const char *buffer, ssize_t len);

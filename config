@@ -139,6 +139,12 @@ server {
         autoindex on;  # Turn on directory listing
         allow_methods GET;
     }
+    location /upload {
+        root /upload;
+        # index index.html;
+        autoindex on;  # Turn on directory listing
+        allow_methods GET;
+    }
 
     # Execute CGI for .php files
     location ~ \.php$ {

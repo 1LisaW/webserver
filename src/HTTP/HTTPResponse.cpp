@@ -65,8 +65,9 @@ HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath)
 	response_headers.append(_request.dictionary.getContentTypeFromDictionary(fileExtention));
 	response_headers.append("\r\n");
 	// if ()
+	std::cout << "LOCATION:  " << request.get_path() << std::endl;
 	if (request.getRequestType() == GET_DIR_LIST)
-		content.append(getDirectoryListing(filePath));
+		content.append(getDirectoryListing(filePath, request.get_path()));
 	else
 		_set_content(filePath);
 	response.append(response_headers);
@@ -144,7 +145,7 @@ std::string HTTPResponse::getDefaultErrorPageContent(enum status_code_value stat
 	return (content);
 }
 
-std::string HTTPResponse::getDirectoryListing(std::string filePath)
+std::string HTTPResponse::getDirectoryListing(std::string filePath, std::string location)
 {
 	std::string content;
 	content.append("<!DOCTYPE html>");
@@ -162,9 +163,13 @@ std::string HTTPResponse::getDirectoryListing(std::string filePath)
 		{
 		    content.append("	<div class=\"fof\" style=\"display: table-row; height: 25px; vertical-align: middle; \"\r\n>");
 			content.append("<a href=\"");
+			content.append(location);
+			if (location.size() > 1 && location.find_last_of('/') != location.size() - 1)
+				content.append("/");
 			content.append(ent->d_name);
 			content.append("\">\r\n");
 			content.append(ent->d_name);
+			content.append(" ");
 			// printf ("%s\n", ent->d_name);
 			content.append("</a>\r\n");
 			content.append("</div>\r\n");
