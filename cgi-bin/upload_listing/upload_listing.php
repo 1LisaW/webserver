@@ -208,7 +208,7 @@
         const popup = document.getElementsByClassName('popup_upload')[0];
         console.log(popup);
         popup.classList.toggle("popup_upload_hidden");
-      
+
         // const url = './upload' +"?filename=" + name;
         // window.location.href = url;
       }

@@ -3,8 +3,11 @@
 HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath) : _request(request)
 {
 	clientFd = clFd;
-	isFulfilled = false;
-	// cgiResponseFd = 0;
+	if (request.getRequestType()== POST_DATA || request.getRequestType() == DELETE_DATA)
+		isFulfilled = false;
+	else
+		isFulfilled = true;
+
 	response.clear();
 		std::cout << "HTTPResponse::HTTPResponse" << std::endl;
 	if (_request.location->isCgi)
@@ -75,13 +78,12 @@ HTTPResponse::HTTPResponse(int clFd, HTTPRequest &request, std::string filePath)
 	response.append("\r\n");
 	response.append(content);
 	this->isFulfilled = true;
-	if (!request.get_method().compare("GET"))
-	{
+	// if (!request.get_method().compare("GET"))
+	// {
 
-		sendResponse();
+	// 	sendResponse();
 
-	}
-	// 	get();
+	// }
 }
 
 HTTPResponse::~HTTPResponse()
@@ -207,15 +209,17 @@ void HTTPResponse::sendResponse()
 
 	if (!_request.location || !(_request.location->isCgi))
 		return ;
-	if (r_type != GET_FILE && r_type != DELETE_DATA)
+	if (r_type == POST_DATA && !_request.isFulfilled)
 		return ;
+	// if (r_type != GET_FILE && r_type != DELETE_DATA)
+		// return ;
 	std::cout << MAGENTA << "SEND DATA CGI " << _request.location->isCgi << RESET << std::endl;
 
 	std::string s;
 	char ch;
 	while (read(cgiResponseFds[0], &ch, 1) > 0)
 	{
-		std::cout << "CHar: " << ch << std::endl;
+		// std::cout << "CHar: " << ch << std::endl;
 		// if (!ch)
 		s.push_back(ch);
 		if (ch == '\n')
@@ -239,15 +243,17 @@ void HTTPResponse::sendResponse()
 	// char ch;
 	while (read(cgiResponseFds[0], &ch, 1) > 0)
 	{
-			std::cout << GREEN << ch << RESET;
+			// std::cout << GREEN << ch << RESET;
 
 			response.push_back(ch);
 	}
+	std::cout << "Rest response: " << response << std::endl;
+
 	isFulfilled = true;
-	std::cout << BLUE << response << RESET << std::endl;
-	std::cout << MAGENTA << "SEND DATA END" << RESET << std::endl;
+	// std::cout << BLUE << response << RESET << std::endl;
+	// std::cout << MAGENTA << "SEND DATA END" << RESET << std::endl;
 	close(cgiResponseFds[0]);
-	std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes\n\n" << RESET << std::endl;
+	std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes (sendResponse)\n\n" << RESET << std::endl;
 
 }
 
@@ -257,26 +263,15 @@ void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 	{
 		std::string buffer = "";
 		buffer.append(buff, len);
-		std::cout << "---tubes[1](setRequestData) is " << tubes[1] << std::endl;
 
 		if (buffer.size())
 		{
 			if (read(tubes[0], NULL, 0) == 0)
 			{
-				std::cout << GREEN << "Is readable" << RESET << std::endl;
 				write(tubes[1], buffer.c_str(), buffer.size());
-				// char ch;
-				// while (read(cgiResponseFds[0], &ch, 1) > 0)
-				// {
-				// 		std::cout << GREEN << "+CHar: " << ch << RESET << std::endl;
-
-				// 		response.push_back(ch);
-				// }
 			}
 			else
 				std::cout << RED << "Is not readable " << read(tubes[0], NULL, 0) << RESET << std::endl;
-
-			std::cout << BLUE << "\n\n--1.3-- WRITE IN PIPE tubes\n" << buffer.size() << "\n" << RESET << std::endl;
 		}
 		if (_request.isFulfilled)
 		{
@@ -284,43 +279,12 @@ void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 			close(tubes[0]);
 			std::cout << MAGENTA << "\n\n--1.4-- PARENT CLOSE PIPE tubes\n\n" << RESET << std::endl;
 
-			// std::string s;
-			// char ch;
-			// while (read(cgiResponseFds[0], &ch, 1) > 0)
+			// if (isFulfilled)
 			// {
-			// 	std::cout << "CHar: " << ch << std::endl;
-			// 	if (!ch)
-			// 	s.push_back(ch);
-			// 	if (ch == '\n')
-			// 		break;
+			// 	close(cgiResponseFds[0]);
+			// 	std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes (setRequestData)\n\n" << RESET << std::endl;
 			// }
-			// std::cout << "First string: " << s << std::endl;
-			// if(!s.compare("Status: OK\r"))
-			// {
-
-			// 	response.append(_request.get_protocol_v());
-			// 	response.append(" 200 OK\r\n");
-			// }
-			// s.clear();
-
-			if (_request.isFulfilled)
-			{
-				// while (read(cgiResponseFds[0], &ch, 1) > 0)
-				// {
-				// 		std::cout << GREEN << "+CHar: " << ch << RESET << std::endl;
-
-				// 		response.push_back(ch);
-				// }
-				close(cgiResponseFds[0]);
-				// close(cgiResponseFds[1]);
-				std::cout << MAGENTA << "\n\n--2.4-- PARENT CLOSE RESPONSE tubes\n\n" << RESET << std::endl;
-
-			}
-
-				std::cout << "<<<< CGI RESPONSE: " << std::endl;
-				std::cout << response << std::endl;
-				std::cout << ">>>> /CGI RESPONSE: " << std::endl;
-			}
+		}
 	}
 }
 
@@ -427,7 +391,6 @@ void HTTPResponse::runCGI(LocationConfig *location, HTTPRequest *request)
 	scriptPath.append(location->root);
 	scriptPath.append("/");
 	scriptPath.append(location->cgiIndex);
-	// paramsList[idx++] = (char *)"./cgi-bin/index.php";
 	paramsList[idx++] = (char *)scriptPath.c_str();
 	paramsList[idx++] = NULL;
 	char ***envp = NULL;

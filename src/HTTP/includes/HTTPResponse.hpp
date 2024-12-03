@@ -34,7 +34,6 @@ private:
 	std::string response_headers;
 	std::string content;
 	void	_set_content(std::string filePath);
-	void sendResponse();
 	// char *paramsCGIList[4];
 	// char ***envp;
 	std::string scriptExec;
@@ -44,6 +43,7 @@ public:
 	std::string response;
 	bool isFulfilled;
 	void	get();
+	void sendResponse();
 	std::string getDefaultErrorPageContent(enum status_code_value statusCode);
 	std::string getDirectoryListing(std::string filePath);
 	void urlEncode(std::string &url);

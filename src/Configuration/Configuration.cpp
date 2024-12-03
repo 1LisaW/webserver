@@ -327,14 +327,6 @@ void Configuration::start()
 		int descReady = activity;
 		for (int i = 0; i <= fd_max  &&  descReady > 0; ++i)
 		{
-			// std::map<std::string, ServerSocket *>::iterator _listenSocketIt = _serverSockets.begin();
-			// ServerSocket *currListenSocket = NULL;
-			// while (!currListenSocket && _listenSocketIt != _serverSockets.end())
-			// {
-			// 	if (i == _listenSocketIt->second->getFd())
-			// 		currListenSocket = _listenSocketIt->second;
-			// 	_listenSocketIt++;
-			// }
 			 if (FD_ISSET(i, &read_fds))
 			{
 				descReady -= 1;
@@ -349,7 +341,6 @@ void Configuration::start()
 							if (errno != EWOULDBLOCK)
 							{
 								std::cerr << "  accept() failed" << std::endl;
-								// end_server = TRUE;
 							}
 							break;
 						}
@@ -364,7 +355,6 @@ void Configuration::start()
 				else
 				{
 					std::cout << "  Descriptor " << i << " is readable" << std::endl;
-					//close_conn = FALSE;
 					unsigned char buffer[4096];
 					ssize_t rc = 0;
 					HTTPRequest *clientRequest = httpRequests[i];
@@ -377,14 +367,11 @@ void Configuration::start()
 						/* connection.                                */
 						/**********************************************/
 						memset(buffer, 0, 4096);
-						std::cout << "RECIVING....." << i << std::endl;
 						rc = recv(i, buffer, sizeof(buffer) - 1, 0);
 
 
 						if ( rc > 0 )
 							buffer[rc] = '\0';
-						// std::cout << buffer << std::endl;
-						std::cout << ".....RECIVING....." << rc << " buff strlen " << std::endl;
 						if (rc < 0)
 						{
 							clientRequest->isFulfilled = true;
@@ -397,11 +384,9 @@ void Configuration::start()
 						}
 						if (rc == 0)
 						{
-							std::cout << " clientRequest->isFulfilled rc == 0 " << std::endl;
 							clientRequest->isFulfilled = true;
 							delete httpRequests[i];
 							clientRequest = NULL;
-							std::cout << "Cliend fd " << i << std::endl;
 							printf("  Connection closed\n");
 							close(i);
 							FD_CLR(i, &master_set);
@@ -410,10 +395,8 @@ void Configuration::start()
 								while (FD_ISSET(fd_max, &master_set) == false)
 									fd_max -= 1;
 							}
-							//  close_conn = TRUE;
 							break;
 						}
-						std::cout << CYAN << "RECV: " << buffer << RESET << std::endl;
 						clientRequest->fillRequestData(buffer, rc);
 						if (clientRequest->response == NULL)
 						{
@@ -430,13 +413,13 @@ void Configuration::start()
 								clientRequest->fillRequestData((const unsigned char *)"", 0);
 							}
 						}
-
-						std::cout << " ~~~~~~~~~~BODY TO READ ";
-						std::cout << clientRequest->bodyToRead << std::endl;
-						if (clientRequest && clientRequest->response && clientRequest->response->isFulfilled)
+						std::cout << BOLDYELLOW << "clientRequest->response->isFulfilled " << clientRequest->response->isFulfilled << RESET << std::endl;
+						if (clientRequest && clientRequest->response && clientRequest->isFulfilled)
 						{
-							std::cout << "SEND" << std::endl;
-							std::cout << YELLOW << clientRequest->response->response << RESET << std::endl;
+							std::cout << YELLOW << "SEND RESPOSE FULFIELD" << RESET << std::endl;
+
+							clientRequest->response->sendResponse();
+							std::cout << BOLDYELLOW << "SEND configuration" << RESET << std::endl;
 							send(i , clientRequest->response->response.c_str(), clientRequest->response->response.size(),0);
 							delete httpRequests[i];
 							httpRequests[i] = new HTTPRequest(i, (this->dictionary));
