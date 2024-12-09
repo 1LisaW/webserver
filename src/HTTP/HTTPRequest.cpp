@@ -198,6 +198,7 @@ std::map<std::string, std::string> HTTPRequest::getQueryParams()
 
 void HTTPRequest::fillRequestData(unsigned char const * _buffer, ssize_t rc)
 {
+    std::cout << BLUE << _buffer << RESET << std::endl;
     std::string buffer;
     buffer.append((char*)(_buffer), rc);
     switch (_requestType)

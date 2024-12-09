@@ -110,6 +110,7 @@ std::string WebServer::getResponseFilePath(HTTPRequest *request)
 		request->setStatusCode(not_found);
 	else if (!request->location->isMethodAllowed(request->get_method()))
 		request->setStatusCode(method_not_allowed);
+	// else if (request->getRequestType() == GET_FILE && request->location.)
 	// get path of file
 	else
 	{

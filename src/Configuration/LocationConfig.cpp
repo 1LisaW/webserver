@@ -146,7 +146,7 @@ void LocationConfig::setClientMaxBodySize(std::vector<std::string> vector)
 {
 	if (!isValidOneDigitValue(vector))
 	{
-		clientMaxBodySize = 0;
+		// clientMaxBodySize = -1;
 		return;
 	}
 	int i;
@@ -238,6 +238,8 @@ void LocationConfig::fillAttributes(std::vector<std::string> confLineVector, Dic
 		setCgiParams(confLineVector);
 	else if (!attributeName.compare("return"))
 		setRedirection(confLineVector);
+	else if (!attributeName.compare("client_max_body_size"))
+		setClientMaxBodySize(confLineVector);
 }
 
 bool LocationConfig::isValid()

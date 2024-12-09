@@ -398,14 +398,30 @@ void Configuration::start()
 							break;
 						}
 						clientRequest->fillRequestData(buffer, rc);
-						if (clientRequest->response == NULL)
+						if (clientRequest->get_status_code() == bad_request)
 						{
-							std::cout << "RESPONSE CREATE" << std::endl;
+							std::string badRequest =  "HTTP/1.1 400 Bad Request\r\n\r\n";
+							send(i , badRequest.c_str(), badRequest.size(), 0);
+						}
+						else if (clientRequest->response == NULL)
+						{
+							std::cout << "RESPONSE CREATE " << clientRequest->headers["Host"] << std::endl;
 							std::string hostAndPort = clientRequest->headers["Host"];
 							std::string port = hostAndPort.substr(hostAndPort.find_first_of(':') + 1);
 							std::string host = hostAndPort.substr(0, hostAndPort.find_first_of(':'));
 							WebServer *currServer = _serverSockets[port]->getServer(port);
 							std::string responseFile = currServer->getResponseFilePath(clientRequest);
+							if (!clientRequest->get_status_code() && clientRequest->getRequestType() == POST_DATA && clientRequest->location->clientMaxBodySize >= 0)
+							{
+								std::map<std::string, std::string>::iterator it = clientRequest->headers.find("Content-Length");
+								int cont_len = atoi(it->second.c_str());
+								if (cont_len > clientRequest->location->clientMaxBodySize)
+								{
+									clientRequest->setStatusCode(request_entity_too_large);
+									std::cout << "Content-Length: " << cont_len << std::endl;
+								}
+							}
+							//	clientRequest->setStatusCode(request_entity_too_large);
 							HTTPResponse *response = new HTTPResponse(i, *clientRequest, responseFile);
 							clientRequest->response = response;
 							if (clientRequest->isHeadersSet && clientRequest->getBuffer().size())
@@ -413,8 +429,9 @@ void Configuration::start()
 								clientRequest->fillRequestData((const unsigned char *)"", 0);
 							}
 						}
-						std::cout << BOLDYELLOW << "clientRequest->response->isFulfilled " << clientRequest->response->isFulfilled << RESET << std::endl;
-						if (clientRequest && clientRequest->response && clientRequest->isFulfilled)
+						if (clientRequest->response)
+							std::cout << BOLDYELLOW << "clientRequest->response->isFulfilled " << clientRequest->response->isFulfilled << RESET << std::endl;
+						if (clientRequest && clientRequest->response && clientRequest->response->isFulfilled)
 						{
 							std::cout << YELLOW << "SEND RESPOSE FULFILLED" << RESET << std::endl;
 
