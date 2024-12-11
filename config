@@ -10,7 +10,7 @@ server {
     error_page 500 502 503 504 /error_pages 50x.html;
 
     # Limit client body size
-    client_max_body_size 100;
+    # client_max_body_size 100;
 
     # Root location
     location / {
