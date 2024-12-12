@@ -195,19 +195,23 @@ void HTTPResponse::urlEncode(std::string &string)
 
 void HTTPResponse::sendResponse()
 {
-	std::cout << MAGENTA << "SEND DATA " << RESET << std::endl;
+	std::cout << MAGENTA << "SEND DATA (sendResponse)" << RESET << std::endl;
 	eRequestType r_type = _request.getRequestType();
 
 	if (!_request.location || !(_request.location->isCgi))
 		return ;
 	if (r_type == POST_DATA && !_request.isFulfilled)
+	{
+		std::cout << RED << "REQUEST IS NOT FULFILLED" << RESET << std::endl;
 		return ;
+	}
 	std::cout << MAGENTA << "SEND DATA CGI " << _request.location->isCgi << RESET << std::endl;
 
 	std::string s;
 	char ch;
 	while (read(cgiResponseFds[0], &ch, 1) > 0)
 	{
+		std::cout << "char: "<< ch << std::endl;
 		s.push_back(ch);
 		if (ch == '\n')
 			break;
@@ -254,7 +258,7 @@ void HTTPResponse::setRequestData(const char *buff, ssize_t len)
 			close(tubes[1]);
 			close(tubes[0]);
 			std::cout << MAGENTA << "\n\n--1.4-- PARENT CLOSE PIPE tubes\n\n" << RESET << std::endl;
-
+        	sendResponse();
 		}
 	}
 }
