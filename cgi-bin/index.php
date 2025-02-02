@@ -1,7 +1,7 @@
 <?php
 $config = parse_ini_file(".user.ini");
 $uploaddir = $config['database'];
-
+$maxFileSize = 3 * 1024 * 1024; // 2MB
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET')
 {
@@ -10,23 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET')
     $filename =  $uploaddir . $_GET['filename'];;
     if (file_exists($filename) && is_file($filename))
     {
-      // $size = filesize($filename);
-      // if ($size > 4000)
-      // {
-      //   // header('Status: 200 OK');
-
-      //   header('Status: 206 Partial Content');
-      //   // http_response_code(200);
-
-      //   require_once('./partial_content.php');
-      //   serveFilePartial($filename, $filename);
-      // }
-      //   // header('Status: 206 Partial content');
-      // else
+      $size = filesize($filename);
+      if ($size > $maxFileSize)
+      {
+        header("HTTP/1.0 500 Internal Server Error");
+        exit();
+      }
       header('Status: 200 OK');
       $cont_disp = "attachment; filename=" . $_GET['filename'];
       header("Content-Disposition: $cont_disp");
-      $size = filesize($filename);
       header("Content-length: $size");
       readfile($filename);
     }
@@ -46,8 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET')
 }
 if ($_SERVER['REQUEST_METHOD'] == 'DELETE')
 {
-  // printf("DELETE!!!");
-  // printf($_SERVER['QUERY_STRING']);
   $filename = $uploaddir . $_GET['filename'];
   if (file_exists($filename) && is_file($filename))
   {
@@ -62,24 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE')
 
   exit();
 }
-
-// function convertToBytes(string $from): ?int {
-//   $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-//   $number = substr($from, 0, -2);
-//   $suffix = strtoupper(substr($from,-2));
-
-//   //B or no suffix
-//   if(is_numeric(substr($suffix, 0, 1))) {
-//       return preg_replace('/[^\d]/', '', $from);
-//   }
-
-//   $exponent = array_flip($units)[$suffix] ?? null;
-//   if($exponent === null) {
-//       return null;
-//   }
-
-//   return $number * (1024 ** $exponent);
-// }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
